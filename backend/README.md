@@ -1,0 +1,1 @@
+This can use FastAPI as the framework. It basically needs to modularize and provide an interface (API) that exposes the Study Friend artificial intelligence.
