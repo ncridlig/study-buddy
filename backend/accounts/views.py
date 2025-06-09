@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from drf_yasg.utils import swagger_auto_schema
 from accounts import serializers
+from accounts.docs import schemas
 from accounts.permissions import AnyOnPost_AuthOnGet
 
 
@@ -15,7 +17,7 @@ class RegisterAPIView(generics.CreateAPIView) :
     serializer_class = serializers.RegisterUserSerializer
     permission_classes = (AnyOnPost_AuthOnGet, )
 
-    # @swagger_auto_schema(**schemas['RegisterAPISchema'], manual_parameters=[otp])
+    @swagger_auto_schema(**schemas['RegisterAPIViewSchema']['POST'])
     def post(self, request) :
         serializer = self.serializer_class(data=request.data)
 
@@ -36,7 +38,7 @@ class RegisterAPIView(generics.CreateAPIView) :
                 status = status.HTTP_400_BAD_REQUEST,
             )
 
-    # @swagger_auto_schema(**schemas['UserAPIViewSchema'])
+    @swagger_auto_schema(**schemas['RegisterAPIViewSchema']['GET'])
     def get(self, request):
         user = request.user
         serializer = self.serializer_class(user)
@@ -49,14 +51,14 @@ class RegisterAPIView(generics.CreateAPIView) :
 
 class CustomTokenObtainPairView(TokenObtainPairView):
 
-    # @swagger_auto_schema(**schemas['CustomTokenObtainPairSchema'])
+    @swagger_auto_schema(**schemas['JWTAuth']['LOGIN'])
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
     
-    # @swagger_auto_schema(**schemas['CustomTokenRefreshViewSchema'])
+    @swagger_auto_schema(**schemas['JWTAuth']['REFRESH'])
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
@@ -66,7 +68,6 @@ class PasswordChangeAPIView(generics.GenericAPIView) :
     permission_classes = (IsAuthenticated, )
     serializer_class = serializers.PasswordChangeSerializer
 
-    # @swagger_auto_schema(**schemas['PasswordChangeAPISchema'])
     def patch(self, request) :
         serializer = self.serializer_class(context = {'request':request}, data=request.data)
 

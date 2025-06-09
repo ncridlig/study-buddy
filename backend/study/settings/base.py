@@ -1,16 +1,13 @@
 from pathlib import Path
 from datetime import timedelta
 from django.utils.translation import gettext_lazy as _
+from decouple import config 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-utvqh4jp368q$(w+f+!pilwjfula$*_ql=ssrdz6ryb*ab16rh'
+SECRET_KEY = config('SECRET_KEY')
 
 
 # Application definition
@@ -26,6 +23,9 @@ INSTALLED_APPS = [
     # third-party
     'rest_framework',
 
+    # cors
+    'corsheaders',
+
     # Local apps
     'accounts',
     'topics',
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -44,7 +45,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = 'study.urls'
 
 TEMPLATES = [
     {
@@ -64,7 +65,7 @@ TEMPLATES = [
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
 
-WSGI_APPLICATION = 'backend.wsgi.application'
+WSGI_APPLICATION = 'study.wsgi.application'
 
 
 # Password validation

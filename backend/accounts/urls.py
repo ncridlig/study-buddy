@@ -8,5 +8,5 @@ urlpatterns = [
     path('api/user/', views.RegisterAPIView.as_view(), name='api-user'),
     path('api/login/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/login/refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
-    path('api/change/password/', views.PasswordChangeAPIView.as_view(), name='api-change-password'),
+    # path('api/change/password/', views.PasswordChangeAPIView.as_view(), name='api-change-password'),
 ]
