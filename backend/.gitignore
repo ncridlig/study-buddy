@@ -1,0 +1,12 @@
+# Environments 
+.env 
+.venv
+venv/ 
+
+__pycache__/
+
+/static/
+static
+staticfiles
+/staticfiles/
+staticfiles/
