@@ -32,31 +32,31 @@ This is the backend service for the study-buddy project, built with Django and D
 
 Make a copy of `.env.production.example` and rename it as `.env`. Then edit `.env` file as follows:
 
-- **SECRET_KEY** for Django app
-  SECRET_KEY = produce it using [djecrety](https://djecrety.ir/)
-  <br />
-- **DEBUG**
+- **SECRET_KEY** for Django app  
+  produce value for this field by [djecrety](https://djecrety.ir/)
+
+- **DEBUG**  
   DEBUG = True --> activating debug mode and see logs
   DEBUG = False --> in real world cases
-  <br />
-- **Database** configs
+
+- **Database** configs  
   NAME=your_db_name
   USER=your_db_user
   PASSWORD=your_db_password
   HOST=your_db_host
   PORT=your_db_port
-  <br />
-- **Superuser** info
+
+- **Superuser** info  
   DJANGO_SUPERUSER_EMAIL=superuser_email
   DJANGO_SUPERUSER_FIRSTNAME=superuser_firstname
   DJANGO_SUPERUSER_LASTNAME=superuser_lastname
   DJANGO_SUPERUSER_PASSWORD=superuser_password
-  <br />
-- **Settings Module**
+
+- **Settings Module**  
   DJANGO_SETTINGS_MODULE = 'study.settings.developement' --> to run the app locally
   DJANGO_SETTINGS_MODULE = 'study.settings.production' --> to run the app with docker
-  <br />
-- **CORS Support**
+
+- **CORS Support**  
   Put the allowed origins from other outside services (e.g., frontend) in _ALLOWED_ORIGINS_ and separate them with a space. For instance:
   ```bash
   ALLOWED_ORIGINS="http://localhost:3000 http://127.0.0.1:3000"
