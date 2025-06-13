@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgis/postgis:14-3.1
+    image: postgres:latest
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -40,7 +40,6 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/app/staticfiles/
       - media_volume:/app/media/
-      #- ./resc/staticfiles:/app/resc/staticfiles
     ports:
       - "80:80"
     depends_on:
