@@ -58,7 +58,7 @@ export default function LoginPage() {
         </Button>
 
         <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-          Don't have an account?{' '}
+          Don not have an account?{' '}
           <MuiLink component={Link} href="/signup">
             Sign Up
           </MuiLink>
