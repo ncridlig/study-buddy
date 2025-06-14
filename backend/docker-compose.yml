@@ -15,6 +15,11 @@ services:
       timeout: 5s
       retries: 5
 
+  rd:
+    image: redis:alpine
+    networks:
+      - app-network
+
   web:
     build:
       context: .
@@ -24,12 +29,29 @@ services:
     command: >
       sh -c "python /app/manage.py migrate &&
             python /app/manage.py init_admin &&
-            gunicorn study.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+            daphne -b 0.0.0.0 -p 8000 study.asgi:application"
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     depends_on:
       - db
+    networks:
+      - app-network
+    restart: always
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    command: >
+      sh -c "celery -A study worker -l info"
+    volumes:
+      - static_volume:/app/staticfiles
+    depends_on:
+      - web
+      - rd
     networks:
       - app-network
     restart: always

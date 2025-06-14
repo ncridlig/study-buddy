@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'topics',
+    'results',
 
     # swagger
     'drf_yasg',
@@ -156,7 +157,7 @@ SIMPLE_JWT = {
 }
 
 # Celery Configs(local)
-REDIS_HOST = config("REDIS_HOST", default="127.0.0.1")
+REDIS_HOST = 'localhost' if config('DJANGO_SETTINGS_MODULE') == 'study.settings.developement' else config('REDIS_HOST')
 CELERY_BROKER_URL = f'redis://{REDIS_HOST}:6379/0'
 CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:6379/0'
 
@@ -170,6 +171,17 @@ CELERY_WORKER_PREFETCH_MULTIPLIER = 4
 
 
 ##### CUSTOM SETTINGS #####
+## File Upload Settings
 ALLOWED_FILE_TYPES = ['.pdf',]
 ALLOWED_NUMBER_OF_FILES = 10
 ALLOWED_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+
+## QA Generation STATUS
+PENDING    = 'PENDING'
+PROCESSING = 'PROCESSING'
+SUCCESS    = 'SUCCESS'
+FAILED     = 'FAILED'
+
+## LLM Service URL
+LLM_SERVICE_URL = config('LLM_SERVICE_URL')

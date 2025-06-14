@@ -12,11 +12,6 @@ COPY . /app/
 
 ENV PYTHONPATH=/app
 
-# RUN ["sh", "-c", "python /app/backend/manage.py collectstatic --noinput || true"]
 RUN python /app/manage.py collectstatic --noinput
-
-# Start Gunicorn server
-# CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
-# CMD ["gunicorn", "backend.wsgi:application", "--chdir", "/app/backend", "--bind", "0.0.0.0:8000", "--workers", "3"]
 
 EXPOSE 8000
