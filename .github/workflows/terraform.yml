@@ -1,18 +1,77 @@
+# name: Terraform CI
+
+# on:
+#   push:
+#     paths:
+#       - 'terraform/**'
+#       - 'frontend/**'
+#   pull_request:
+#     paths:
+#       - 'terraform/**'
+#       - 'frontend/**'
+
+# jobs:
+#   terraform:
+#     name: Terraform Format, Validate, Plan, Scan, Deploy
+#     runs-on: ubuntu-latest
+
+#     defaults:
+#       run:
+#         working-directory: terraform
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Set up Terraform
+#         uses: hashicorp/setup-terraform@v2
+#         with:
+#           terraform_version: 1.6.6
+
+#       - name: Authenticate to Google Cloud
+#         uses: google-github-actions/auth@v2
+#         with:
+#           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+#       - name: Set GCP Project (optional but good)
+#         run: gcloud config set project gruppo-11
+
+#       - name: Terraform Format Check
+#         run: terraform fmt -check -recursive
+
+#       - name: Terraform Init
+#         run: terraform init
+
+#       - name: Terraform Validate
+#         run: terraform validate
+
+#       - name: Terraform Plan
+#         run: terraform plan -var-file="terraform.tfvars"
+
+#       - name: Run tfsec (Security Scan)
+#         uses: aquasecurity/tfsec-action@v1.0.3
+#         with:
+#           working-directory: terraform
+
+#       - name: Terraform Apply (main only)
+#         if: github.ref == 'refs/heads/main'
+#         run: terraform apply -auto-approve -var-file="terraform.tfvars"
+
 name: Terraform CI
 
 on:
   push:
     paths:
-      - 'terraform/**'
       - 'frontend/**'
+      - 'terraform/**'
   pull_request:
     paths:
-      - 'terraform/**'
       - 'frontend/**'
+      - 'terraform/**'
 
 jobs:
   terraform:
-    name: Terraform Format, Validate, Plan, Scan, Deploy
+    name: Build Docker, Push Image, Plan & Deploy
     runs-on: ubuntu-latest
 
     defaults:
@@ -20,21 +79,30 @@ jobs:
         working-directory: terraform
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.6.6
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
-      - name: Set GCP Project (optional but good)
-        run: gcloud config set project gruppo-11
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker europe-west1-docker.pkg.dev
+
+      - name: Build Docker Image for Frontend
+        run: |
+          docker build -t europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:latest ../frontend
+
+      - name: Push Docker Image to Artifact Registry
+        run: |
+          docker push europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:latest
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.6
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
@@ -53,6 +121,6 @@ jobs:
         with:
           working-directory: terraform
 
-      - name: Terraform Apply (main only)
+      - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve -var-file="terraform.tfvars"
