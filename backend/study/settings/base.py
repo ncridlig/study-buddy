@@ -169,6 +169,16 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_WORKER_PREFETCH_MULTIPLIER = 4
 
+# CHANNELS LAYER
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [f"redis://{REDIS_HOST}:6379/2"],
+        },
+    },
+}
+
 
 ##### CUSTOM SETTINGS #####
 ## File Upload Settings
@@ -185,3 +195,7 @@ FAILED     = 'FAILED'
 
 ## LLM Service URL
 LLM_SERVICE_URL = config('LLM_SERVICE_URL')
+
+## Django Channels Routigs Config
+CHANNELS_ROUTING_NAME = 'routings'
+CHANNELS_URL_PATTERN = 'websocket_urlpatterns'

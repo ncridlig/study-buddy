@@ -27,7 +27,6 @@ class QAGenerationTaskCreateAPIView(
 @csrf_exempt
 @require_POST
 def llm_callback(request):
-    print("🔍 Incoming Host Header:", request.get_host()) 
     try:
         data = json.loads(request.body)
         task_id = data.get("task_id")
