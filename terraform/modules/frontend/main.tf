@@ -22,8 +22,8 @@ resource "google_cloud_run_service" "frontend" {
 }
 
 resource "google_cloud_run_service_iam_member" "frontend_invoker" {
-  service = google_cloud_run_service.frontend.name
+  service  = google_cloud_run_service.frontend.name
   location = google_cloud_run_service.frontend.location
-  role    = "roles/run.invoker"
-  member  = "allAuthenticatedUsers"
+  role     = "roles/run.invoker"
+  member   = "allAuthenticatedUsers"
 }

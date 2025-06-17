@@ -9,6 +9,6 @@ variable "region" {
 }
 
 variable "image" {
-  type    = string
+  type        = string
   description = "Docker image path from Artifact Registry"
 }
