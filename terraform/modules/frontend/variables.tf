@@ -1,6 +1,6 @@
 variable "service_name" {
   type    = string
-  default = "study-buddy-frontend"
+  default = "study-buddy-frontend-public"
 }
 
 variable "region" {
