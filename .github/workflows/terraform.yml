@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - 'terraform/**'
+      - 'frontend/**'
   pull_request:
     paths:
       - 'terraform/**'
+      - 'frontend/**'
 
 jobs:
   terraform:
