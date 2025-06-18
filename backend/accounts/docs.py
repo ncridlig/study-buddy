@@ -16,7 +16,7 @@ schemas = {
             Register a new user.
 
             Required fields:
-            - **email`**
+            - **email**
             - **firstname**
             - **lastname**
             - **password**

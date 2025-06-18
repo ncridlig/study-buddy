@@ -1,14 +1,17 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from drf_yasg.utils import swagger_auto_schema
 from results.models import QAGenerationTask
 from results.serializers import QAGenerationTaskCreateSerializer
 from results.utils import notify_task_status
+from results.docs import schemas
 import json
 
 
@@ -25,7 +28,31 @@ class QAGenerationTaskCreateAPIView(
     serializer_class = QAGenerationTaskCreateSerializer
     permission_classes = [IsAuthenticated, ]
 
+    @swagger_auto_schema(**schemas['QAGenerationTaskAPIViewSchema']['LIST'])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+    @swagger_auto_schema(**schemas['QAGenerationTaskAPIViewSchema']['CREATE'])
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
+
+class QAGenerationTaskRetrieveAPIView(generics.RetrieveAPIView):
+    serializer_class = QAGenerationTaskCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return QAGenerationTask.objects.none()
+        return QAGenerationTask.objects.filter(topic__user=self.request.user)
+    
+    @swagger_auto_schema(**schemas['QAGenerationTaskAPIViewSchema']['RETRIEVE'])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+@swagger_auto_schema(**schemas['LLM_CALLBACK_SCHEMA']['POST'])
+@api_view(['POST'])
 @csrf_exempt
 @require_POST
 def llm_callback(request):
