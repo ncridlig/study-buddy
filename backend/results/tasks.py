@@ -1,10 +1,10 @@
 from celery import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-
-import requests
 from topics.models import UploadedFile
 from results.models import QAGenerationTask
+from results.utils import notify_task_status
+import requests
 
 @shared_task
 def send_to_llm_service(task_id):
@@ -15,6 +15,8 @@ def send_to_llm_service(task_id):
 
     task.status = settings.PROCESSING
     task.save()
+
+    notify_task_status(task)
 
     topic = task.topic
     files = UploadedFile.objects.filter(topic=topic).order_by('order')

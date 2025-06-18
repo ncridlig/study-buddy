@@ -1,12 +1,14 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from results.models import QAGenerationTask
-from results.serializers import QAGenerationTaskCreateSerializer
+from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from results.models import QAGenerationTask
+from results.serializers import QAGenerationTaskCreateSerializer
+from results.utils import notify_task_status
 import json
 
 
@@ -33,35 +35,36 @@ def llm_callback(request):
         markdown = data.get("markdown_content")
 
         if not task_id or not markdown:
-            return JsonResponse({"error": "Missing task_id or markdown_content"}, status=400)
+            return JsonResponse({"Message": _("Missing task_id or markdown_content")}, status=400)
 
         try:
             task = QAGenerationTask.objects.select_related('topic__user').get(id=task_id)
         except QAGenerationTask.DoesNotExist:
-            return JsonResponse({"error": "Task not found"}, status=404)
+            return JsonResponse({"Message": _("Task not found")}, status=404)
         
         # ✅ Only allow callback if task is in PROCESSING
         # This should not happen in normal flow, since LLM-service removes task-ids after processing
-        if task.status != "PROCESSING":
-            return JsonResponse({"error": "Task is not in PROCESSING state."}, status=409)
+        if task.status != settings.PROCESSING:
+            return JsonResponse({"Message": _("Task is not in PROCESSING state.")}, status=409)
         
         try:
             task.result_file.save("dummy.md", ContentFile(markdown))
             task.status = settings.SUCCESS
             task.save()
-            # Optionally notify via Django Channels here
-            return JsonResponse({"ok": True})
+            message, status_code = _("Success"), 200
+
         except Exception as e:
             error_msg = f"Failed to save markdown file: {str(e)}"
             task.error_message = error_msg
             task.status = settings.FAILED
             task.save()
+            message, status_code = str(e), 500
 
-            # Optionally notify via Django Channels here
-            JsonResponse({"error": str(e)}, status=500)
+        notify_task_status(task)
+        return JsonResponse({"Message": message}, status=status_code)
 
     except Exception as e:
         # Optionally notify via Django Channels here
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"Message": str(e)}, status=500)
 
 
