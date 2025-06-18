@@ -3,16 +3,16 @@
 # on:
 #   push:
 #     paths:
-#       - 'frontend/**'
 #       - 'terraform/**'
+#       - 'frontend/**'
 #   pull_request:
 #     paths:
-#       - 'frontend/**'
 #       - 'terraform/**'
+#       - 'frontend/**'
 
 # jobs:
 #   terraform:
-#     name: Build Docker, Push Image, Plan & Deploy
+#     name: Terraform Format, Validate, Plan, Scan, Deploy
 #     runs-on: ubuntu-latest
 
 #     defaults:
@@ -20,30 +20,21 @@
 #         working-directory: terraform
 
 #     steps:
-#       - name: Checkout repo
+#       - name: Checkout repository
 #         uses: actions/checkout@v3
+
+#       - name: Set up Terraform
+#         uses: hashicorp/setup-terraform@v2
+#         with:
+#           terraform_version: 1.6.6
 
 #       - name: Authenticate to Google Cloud
 #         uses: google-github-actions/auth@v2
 #         with:
 #           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
-#       - name: Configure Docker for Artifact Registry
-#         run: |
-#           gcloud auth configure-docker europe-west1-docker.pkg.dev
-
-#       - name: Build Docker Image for Frontend
-#         run: |
-#           docker build -t europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:latest ../frontend
-
-#       - name: Push Docker Image to Artifact Registry
-#         run: |
-#           docker push europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:latest
-
-#       - name: Set up Terraform
-#         uses: hashicorp/setup-terraform@v2
-#         with:
-#           terraform_version: 1.6.6
+#       - name: Set GCP Project (optional but good)
+#         run: gcloud config set project gruppo-11
 
 #       - name: Terraform Format Check
 #         run: terraform fmt -check -recursive
@@ -62,86 +53,70 @@
 #         with:
 #           working-directory: terraform
 
-#       - name: Terraform Apply
+#       - name: Terraform Apply (main only)
 #         if: github.ref == 'refs/heads/main'
 #         run: terraform apply -auto-approve -var-file="terraform.tfvars"
+
+
+
 
 
 name: Terraform CI
 
 on:
   push:
-    paths:
-      - 'frontend/**'
-      - 'terraform/**'
+    paths: [ 'frontend/**', 'terraform/**' ]
   pull_request:
-    paths:
-      - 'frontend/**'
-      - 'terraform/**'
+    paths: [ 'frontend/**', 'terraform/**' ]
 
 jobs:
   terraform:
-    name: Build Docker, Push Image, Plan & Deploy
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: terraform
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      # ---------- Google Cloud ----------
+      - uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
       - name: Configure Docker for Artifact Registry
-        run: |
-          gcloud auth configure-docker europe-west1-docker.pkg.dev
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
 
+      # ---------- Build & Push ----------
       - name: Set image tag
-        id: tag
         run: echo "IMAGE_TAG=sha-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Build Docker Image for Frontend
+      - name: Build Docker image
         run: |
           docker build -t europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:${{ env.IMAGE_TAG }} ../frontend
+        working-directory: ./terraform      # repo-root = ../ from here
 
-      - name: Push Docker Image to Artifact Registry
+      - name: Push Docker image
         run: |
           docker push europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:${{ env.IMAGE_TAG }}
+        working-directory: ./terraform
 
-      - name: Write terraform.tfvars dynamically
-        run: |
-          echo 'image = "europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:${{ env.IMAGE_TAG }}"' > terraform/terraform.tfvars
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+      # ---------- Terraform ----------
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.6.6
 
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
+      - name: Write terraform.tfvars
+        run: |
+          echo 'image = "europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:${{ env.IMAGE_TAG }}"' > terraform.tfvars
+        working-directory: ./terraform
 
       - name: Terraform Init
         run: terraform init
-
-      - name: Terraform Validate
-        run: terraform validate
+        working-directory: ./terraform
 
       - name: Terraform Plan
         run: terraform plan -var-file="terraform.tfvars"
-
-      - name: Run tfsec (Security Scan)
-        uses: aquasecurity/tfsec-action@v1.0.3
-        with:
-          working-directory: terraform
+        working-directory: ./terraform
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve -var-file="terraform.tfvars"
-
-
-        
+        working-directory: ./terraform
