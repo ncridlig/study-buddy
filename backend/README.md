@@ -54,8 +54,17 @@ Make a copy of `.env.production.example` and rename it as `.env`. Then edit `.en
 - **Settings** Module  
   Use `DJANGO_SETTINGS_MODULE = 'study.settings.developement'` if you intend to run the app locally. And use `DJANGO_SETTINGS_MODULE = 'study.settings.production'` if you intend to run it using containerizing applications such as Docker.
 
+- **REDIS** configuration  
+  Set `REDIS_HOST` to the name of redis container in docker-compose file, if you plan to use docker. Otherwise, in case you intend to run the app locally, no need to have this variable in your `.env` file.
+
+- **ALLOWED** requests  
+  The `ALLOWED_HOSTS` setting defines which host/domain names are valid when making requests to this Django service. Django will reject any incoming request with a `Host` header that is **not** listed in `ALLOWED_HOSTS`. For example, `ALLOWED_HOSTS="web web:8000 localhost 127.0.0.1 [::1]"` allows requests with `Host` headers matching `web`, `web:8000`, `localhost`, `127.0.0.1`, or `[::1]` (IPv6 loopback). This is particularly important when other services try to communicate with this backend.
+
 - **CORS** Support  
   To allow external services (e.g., frontend), have access to this application, you need to put their corresponding origins in `ALLOWED_ORIGINS` and separate them with a space. For instance, `ALLOWED_ORIGINS="http://localhost:3000 http://127.0.0.1:3000"`, grants access to `http://localhost:3000` and `http://127.0.0.1:3000`.
+
+- `LLM_SERVICE_URL`  
+  This variable defines the endpoint of the LLM microservice to which the backend sends Q&A generation requests.
 
 ## 2. 📦 Create Docker volumes and network
 
