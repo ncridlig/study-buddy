@@ -1,5 +1,7 @@
-region = "europe-west1"
+project_id   = "gruppo-11"
+region       = "europe-west1"
+github_org   = "ncridlig"
+github_repo  = "study-buddy"
 
-project_id = "gruppo-11"
-
-image = "europe-west1-docker.pkg.dev/gruppo-11/frontend/study-buddy-frontend:v0"
+# Only if using Snyk (optional)
+# snyk_token   = "YOUR_SNYK_API_TOKEN"

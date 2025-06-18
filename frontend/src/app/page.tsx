@@ -57,7 +57,7 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <Container maxWidth="md" sx={{ textAlign: 'center', py: 10 }}>
-      <Typography>Testing terraform 4</Typography>
+      <Typography>Testing terraform 2</Typography>
       <Typography variant="h2" fontWeight="bold" gutterBottom>
         Meet Your Study Buddy
       </Typography>
