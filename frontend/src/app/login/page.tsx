@@ -8,17 +8,46 @@ import {
   TextField,
   Typography,
   Link as MuiLink,
+  Alert,
 } from '@mui/material';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Logging in with:', { email, password });
-    // TODO: send to API
+    setError('');
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/account/api/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Invalid email or password');
+      }
+
+      const data = await res.json();
+
+      // Save tokens in cookies
+      Cookies.set('access_token', data.access, { expires: 1 }); // 1 day
+      Cookies.set('refresh_token', data.refresh, { expires: 7 }); // 7 days
+
+      router.push('/dashboard/projects');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+    }
   };
 
   return (
@@ -26,6 +55,8 @@ export default function LoginPage() {
       <Typography variant="h4" align="center" gutterBottom>
         Log In
       </Typography>
+
+      {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
 
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
         <TextField
@@ -58,7 +89,7 @@ export default function LoginPage() {
         </Button>
 
         <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-          Don not have an account?{' '}
+          Don’t have an account?{' '}
           <MuiLink component={Link} href="/signup">
             Sign Up
           </MuiLink>
