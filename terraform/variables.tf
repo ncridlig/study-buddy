@@ -1,7 +1,11 @@
-variable "project_id"  { type = string }
-variable "region"      { type = string }
-variable "github_org"  { type = string }
-variable "github_repo" { type = string }
+variable "gcp_project_id" {
+  description = "The GCP project ID for the backend (gruppo-11)."
+  type        = string
+  default     = "gruppo-11"
+}
 
-# Optional, only if you plan to use Snyk above:
-variable "snyk_token"  { type = string }
+variable "gcp_region" {
+  description = "The primary GCP region for resources."
+  type        = string
+  default     = "europe-west1"
+}

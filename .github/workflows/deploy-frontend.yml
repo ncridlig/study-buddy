@@ -1,0 +1,40 @@
+name: Deploy Frontend to Cloud Run
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'frontend/**'
+
+env:
+  GCP_PROJECT_ID: 'gruppo-11'
+  GCP_REGION: 'europe-west1'
+  GAR_LOCATION: 'europe-west1'
+  SERVICE_NAME: 'study-buddy-frontend'
+  REPO_NAME: 'study-buddy-frontend-images'
+
+  # ❗ ACTION REQUIRED: Fill these placeholders
+  WIF_PROVIDER: 'projects/YOUR_PROJECT_NUMBER_HERE/locations/global/workloadIdentityPools/YOUR_POOL_ID/providers/YOUR_PROVIDER_ID'
+  SERVICE_ACCOUNT: 'github-terraform@gruppo-11.iam.gserviceaccount.com'
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Frontend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: Authenticate to GCP
+      id: auth
+      uses: 'google-github-actions/auth@v2'
+      with:
+        workload_identity_provider: ${{ env.WIF_PROVIDER }}
+        service_account: ${{ env.SERVICE_ACCOUNT }}
+    - name: 'Build and Push Docker Image'
+      run: gcloud builds submit ./frontend --tag "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest"
+    - name: 'Deploy to Cloud Run'
+      run: gcloud run deploy ${{ env.SERVICE_NAME }} --image "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest" --region ${{ env.GCP_REGION }} --allow-unauthenticated
