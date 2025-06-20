@@ -1,0 +1,41 @@
+services:
+  llm-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rd2
+    networks:
+      - llm-app-network
+    restart: always
+
+  llm-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    command: >
+      sh -c "celery -A celery_worker.celery_app worker -l info"
+    depends_on:
+      - rd2
+      - llm-api
+    networks:
+      - llm-app-network
+    restart: always
+
+  rd2:
+    image: redis:alpine
+    networks:
+      - llm-app-network
+    restart: always
+
+networks:
+  llm-app-network:
+    external: true
