@@ -69,7 +69,7 @@ docker ps -a
 
 - Admin Panel of backend: http://localhost/admin/
 - Swagger API Docs of backend: http://localhost/docs/
-- Swagger API Docs of llm service: http://localhost:8000/docs/
+- Swagger API Docs of llm service: http://localhost:8001/docs/
 
 ---
 

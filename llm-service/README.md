@@ -49,7 +49,7 @@ docker ps -a
 
 ## 🌐 Accessing the Application
 
-- Swagger API Docs: http://localhost/docs/
+- Swagger API Docs: http://localhost:8000/docs/
 
 ---
 
