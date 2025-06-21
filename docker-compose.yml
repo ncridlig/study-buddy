@@ -1,0 +1,134 @@
+services:
+  # === SERVICE 1 (Backend) ===
+  db:
+    image: postgres:latest
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${NAME}
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  rd:
+    image: redis:alpine
+    networks:
+      - app-network
+    restart: always
+
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    command: >
+      sh -c "python /app/manage.py migrate &&
+             python /app/manage.py init_admin &&
+             daphne -b 0.0.0.0 -p 8000 study.asgi:application"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - db
+    networks:
+      - app-network
+      - shared-bridge
+    restart: always
+
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    command: >
+      sh -c "celery -A study worker -l info"
+    volumes:
+      - static_volume:/app/staticfiles
+    depends_on:
+      - web
+      - rd
+    networks:
+      - app-network
+      - shared-bridge
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./backend/nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/app/staticfiles/
+      - media_volume:/app/media/
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    networks:
+      - app-network
+
+  # === SERVICE 2 (LLM Microservice) === (might need to have a volume)
+  rd2:
+    image: redis:alpine
+    networks:
+      - llm-app-network
+    restart: always
+
+  llm-api:
+    build:
+      context: ./llm-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./llm-service/.env
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8001:8000" # Local port 8001 -> container 8000
+    depends_on:
+      - rd2
+    networks:
+      - llm-app-network
+      - shared-bridge
+    restart: always
+
+  llm-worker:
+    build:
+      context: ./llm-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./llm-service/.env
+    command: >
+      sh -c "celery -A celery_worker.celery_app worker -l info"
+    depends_on:
+      - rd2
+      - llm-api
+    networks:
+      - llm-app-network
+      - shared-bridge
+    volumes:
+      - media_volume:/app/media
+    restart: always
+
+# === VOLUMES ===
+volumes:
+  pgdata:
+    external: true
+  static_volume:
+    external: true
+  media_volume:
+    external: true
+
+# === NETWORKS ===
+networks:
+  app-network:
+    external: true
+  llm-app-network:
+    external: true
+  shared-bridge:
