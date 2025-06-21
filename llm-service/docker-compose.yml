@@ -33,9 +33,16 @@ services:
 
   rd2:
     image: redis:alpine
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - rd2-data:/data
     networks:
       - llm-app-network
     restart: always
+
+volumes:
+  rd2-data:
+    external: true
 
 networks:
   llm-app-network:

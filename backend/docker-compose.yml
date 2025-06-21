@@ -17,8 +17,12 @@ services:
 
   rd:
     image: redis:alpine
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - rd1-data:/data
     networks:
       - app-network
+    restart: always
 
   web:
     build:
@@ -75,6 +79,8 @@ volumes:
   static_volume:
     external: true
   media_volume:
+    external: true
+  rd1-data:
     external: true
 
 networks:

@@ -19,6 +19,9 @@ services:
 
   rd:
     image: redis:alpine
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - rd1-data:/data
     networks:
       - app-network
     restart: always
@@ -77,6 +80,9 @@ services:
   # === SERVICE 2 (LLM Microservice) === (might need to have a volume)
   rd2:
     image: redis:alpine
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - rd2-data:/data
     networks:
       - llm-app-network
     restart: always
@@ -123,6 +129,10 @@ volumes:
   static_volume:
     external: true
   media_volume:
+    external: true
+  rd1-data:
+    external: true
+  rd2-data:
     external: true
 
 # === NETWORKS ===
