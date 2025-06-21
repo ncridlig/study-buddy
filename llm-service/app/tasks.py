@@ -1,6 +1,7 @@
 from celery import Celery
 from app.settings import settings
-from app.utils import validate_files_exist
+from app.utils import validate_files_exist, BaseTaskWithFailureHandler
+from app import redis_client
 import time
 import requests
 
@@ -18,32 +19,41 @@ celery_app.conf.update(
     worker_prefetch_multiplier=settings.CELERY_WORKER_PREFETCH_MULTIPLIER,
 )
 
-@celery_app.task
-def process_qas_task(file_addresses: list[str], task_id: str):
+@celery_app.task(
+        bind=True,
+        max_retries=settings.ASYNC_JOB_MAX_RETRIES,
+        default_retry_delay=settings.ASYNC_JOB_RETRY_DELAY,
+        base=BaseTaskWithFailureHandler
+        )
+def process_qas_task(self, file_addresses: list[str], task_id: str):
 
-    try:
-        ####### Call to study_friend here #######
-        # json_payload = produce_QAs(file_addresses, task_id)
-        time.sleep(10)
-        validate_files_exist(file_addresses)
-        #########################################
-        json_payload = {
-            "success": True,
-            "task_id": task_id,
-            "markdown_content": "# ✅ Task Completed\nHere is your result."
-        }
-        print(f"Callback for task {task_id} → {response.status_code}")
-    except Exception as e:
-        json_payload = {
-            "success": False,
-            "task_id": task_id,
-            "error_message": str(e)
-        }
-        print(f"[ERROR] Callback for task {task_id} failed: {e}")
+    json_payload = redis_client.get_json(task_id)
+    if not(json_payload):
+        try:
+            ####### Call to study_friend here #######
+            # json_payload = produce_QAs(file_addresses, task_id)
+            time.sleep(10)
+            markdown_content = validate_files_exist(file_addresses)
+            #########################################
+            json_payload = {
+                "success": True,
+                "task_id": task_id,
+                "markdown_content": markdown_content
+            }
+        except Exception as e:
+            json_payload = {
+                "success": False,
+                "task_id": task_id,
+                "error_message": str(e)
+            }
+
+        redis_client.set_json(task_id, json_payload)
 
     try:
         response = requests.post(settings.BACKEND_URL, json=json_payload)
-    except:
-        # If the backend is not reachable, we have to 
-        return
-    
+        response.raise_for_status()
+        redis_client.delete_key(task_id)
+        print(f"Callback for task {task_id} → {response.status_code}")
+    except requests.RequestException as exc:
+        raise self.retry(exc=exc)
+

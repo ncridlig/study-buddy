@@ -26,4 +26,9 @@ class Settings(BaseSettings):
     CELERY_TASK_ALWAYS_EAGER: bool = False
     CELERY_WORKER_PREFETCH_MULTIPLIER: int = 4
 
+    ASYNC_JOB_MAX_RETRIES: int = int(config('ASYNC_JOB_MAX_RETRIES'))
+    ASYNC_JOB_RETRY_DELAY: int = int(config('ASYNC_JOB_RETRY_DELAY'))
+    ASYNC_JOB_TIMEOUT: int = int(config('ASYNC_JOB_TIMEOUT'))
+    MARK_LEFTOVER_RESULT_KEY: str = config('MARK_LEFTOVER_RESULT_KEY', default='leftover')
+
 settings = Settings()

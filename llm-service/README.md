@@ -22,6 +22,12 @@ Make a copy of `.env.production.example` and rename it as `.env`. Then edit `.en
 - `BACKEND_URL`  
   If you intend to use the current docker compose file, then set this variable to `http://web:8000/result/llm_callback/` or `http://web/result/llm_callback/`. In case you decided to modify backend service name, change these address accordingly.
 
+- _Asynchronous Heavy LLM Jobs_ Configs  
+  `ASYNC_JOB_MAX_RETRIES`=maximum number of times that LLM-Service retries to send the results to backend(in case backend was down for any reason)
+  `ASYNC_JOB_RETRY_DELAY`=period to wait between each retry(in seconds)
+  `ASYNC_JOB_TIMEOUT`=period to keep and not delete the results(in seconds)
+  `MARK_LEFTOVER_RESULT_KEY`=the name of the key to add to the dictionary result of a task. It is used to mark the tasks whose results have been produced, but the transfer of results to backend have been unsuccessful.
+
 ## 2. 📦 Create Docker volumes and network
 
 you must create the external volumes and network used by docker-compose.yml:
