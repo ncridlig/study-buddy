@@ -74,6 +74,7 @@ you must create the external volumes and network used by docker-compose.yml:
 docker volume create pgdata
 docker volume create static_volume
 docker volume create media_volume
+docker volume create rd1-data
 docker network create app-network
 ```
 
