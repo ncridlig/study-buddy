@@ -78,6 +78,12 @@ docker volume create rd1-data
 docker network create app-network
 ```
 
+To establish the communication of backend and LLM-Service, you need to build the bridge between them as well:
+
+```bash
+docker network create shared-bridge
+```
+
 ## 3. 🚀 Run the containers
 
 Start the application stack (remember to change directory to where `docker-compose.yml` file exists):

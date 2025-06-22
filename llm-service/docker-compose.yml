@@ -9,11 +9,12 @@ services:
     command: >
       sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000"
     ports:
-      - "8000:8000"
+      - "8001:8000"
     depends_on:
       - rd2
     networks:
       - llm-app-network
+      - shared-bridge
     restart: always
 
   llm-worker:
@@ -29,6 +30,9 @@ services:
       - llm-api
     networks:
       - llm-app-network
+      - shared-bridge
+    volumes:
+      - media_volume:/app/media
     restart: always
 
   rd2:
@@ -43,7 +47,11 @@ services:
 volumes:
   rd2-data:
     external: true
+  media_volume:
+    external: true
 
 networks:
   llm-app-network:
+    external: true
+  shared-bridge:
     external: true

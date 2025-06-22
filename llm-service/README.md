@@ -37,6 +37,18 @@ docker volume create rd2-data
 docker network create llm-app-network
 ```
 
+Mount the `Media` volume of backend to have access to the files as well:
+
+```bash
+docker volume create media_volume
+```
+
+To establish the communication of backend and LLM-Service, you need to build the bridge between them:
+
+```bash
+docker network create shared-bridge
+```
+
 ## 3. 🚀 Run the containers
 
 Start the application stack (remember to change directory to where `docker-compose.yml` file exists):
@@ -55,7 +67,7 @@ docker ps -a
 
 ## 🌐 Accessing the Application
 
-- Swagger API Docs: http://localhost:8000/docs/
+- Swagger API Docs: http://localhost:8001/docs/
 
 ---
 

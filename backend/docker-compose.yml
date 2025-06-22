@@ -41,6 +41,7 @@ services:
       - db
     networks:
       - app-network
+      - shared-bridge
     restart: always
 
   celery:
@@ -58,6 +59,7 @@ services:
       - rd
     networks:
       - app-network
+      - shared-bridge
     restart: always
 
   nginx:
@@ -85,4 +87,6 @@ volumes:
 
 networks:
   app-network:
+    external: true
+  shared-bridge:
     external: true

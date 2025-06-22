@@ -21,9 +21,9 @@ celery_app.conf.update(
 
 @celery_app.task(
         bind=True,
-        max_retries=settings.ASYNC_JOB_MAX_RETRIES,
-        default_retry_delay=settings.ASYNC_JOB_RETRY_DELAY,
-        base=BaseTaskWithFailureHandler
+        base=BaseTaskWithFailureHandler,
+        max_retries=settings.ASYNC_JOB_MAX_RETRIES, # the task runs a total of (max_retries + 1) times
+        default_retry_delay=settings.ASYNC_JOB_RETRY_DELAY
         )
 def process_qas_task(self, file_addresses: list[str], task_id: str):
 
