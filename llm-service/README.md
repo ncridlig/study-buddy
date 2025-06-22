@@ -27,6 +27,7 @@ Make a copy of `.env.production.example` and rename it as `.env`. Then edit `.en
   `ASYNC_JOB_RETRY_DELAY`=period to wait between each retry(in seconds)
   `ASYNC_JOB_TIMEOUT`=period to keep and not delete the results(in seconds)
   `MARK_LEFTOVER_RESULT_KEY`=the name of the key to add to the dictionary result of a task. It is used to mark the tasks whose results have been produced, but the transfer of results to backend have been unsuccessful.
+  `MARK_DANGLING_RESULT_KEY`=the name of the key to add to the dictionary result of a task. It is used to mark the tasks whose results are dangling.
 
 ## 2. 📦 Create Docker volumes and network
 

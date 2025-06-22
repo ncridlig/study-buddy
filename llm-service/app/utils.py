@@ -30,4 +30,10 @@ class BaseTaskWithFailureHandler(Task):
         if json_payload:
             json_payload[settings.MARK_LEFTOVER_RESULT_KEY] = True
             redis_client.set_json(app_task_id, json_payload, expire_seconds=settings.ASYNC_JOB_TIMEOUT)
-        
+
+
+def mark_task_as_dangling(task_id):
+    json_payload = redis_client.get_json(task_id)
+    if json_payload:
+        json_payload[settings.MARK_DANGLING_RESULT_KEY] = True
+        redis_client.set_json(task_id, json_payload, expire_seconds=settings.ASYNC_JOB_TIMEOUT)

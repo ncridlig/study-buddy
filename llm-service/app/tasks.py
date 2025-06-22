@@ -1,6 +1,6 @@
 from celery import Celery
 from app.settings import settings
-from app.utils import validate_files_exist, BaseTaskWithFailureHandler
+from app.utils import validate_files_exist, BaseTaskWithFailureHandler, mark_task_as_dangling
 from app import redis_client
 import time
 import requests
@@ -52,8 +52,14 @@ def process_qas_task(self, file_addresses: list[str], task_id: str):
     try:
         response = requests.post(settings.BACKEND_URL, json=json_payload)
         response.raise_for_status()
-        redis_client.delete_key(task_id)
-        print(f"Callback for task {task_id} → {response.status_code}")
+        print(f"Response from backend for task {task_id}: {response.text} with status code {response.status_code}")
+        if response.status_code in settings.VALID_RESPONSE_CODES:
+            redis_client.delete_key(task_id)
+        else:
+            ## If the response code is not valid, mark the task as dangling
+            ## This is just for saving the such tasks (if they happened in real scenarios, then we can think about handling them)
+            print(f'Dangling task occured for {task_id}: {response.text} with status code {response.status_code}')
+            # mark_task_as_dangling(task_id)
     except requests.RequestException as exc:
         raise self.retry(exc=exc)
 
