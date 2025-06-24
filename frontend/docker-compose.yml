@@ -1,0 +1,31 @@
+# Define the services (containers) that make up your app.
+services:
+  # Define the frontend service. You can name this whatever you like.
+  frontend:
+    # Tell Docker Compose to build the image from the Dockerfile in the current directory ('.').
+    build: .
+    # Provide a custom name for the container for easier identification.
+    container_name: my_nextjs_app
+    # Forward the exposed port 3000 from the container to the same port on your host machine.
+    # The format is "HOST:CONTAINER"
+    ports:
+      - "3000:3000"
+    # Set a restart policy. 'unless-stopped' will restart the container automatically
+    # unless you explicitly stop it.
+    restart: unless-stopped
+    # It's good practice to mirror environment variables here for clarity,
+    # even though some are set in the Dockerfile.
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    # Optional: Define a network for your services to communicate.
+    # This is useful if you add more services later (e.g., a backend API or database).
+    networks:
+      - app_network
+
+# Define the networks used by the services.
+networks:
+  app_network:
+    # Use the default 'bridge' driver.
+    driver: bridge
