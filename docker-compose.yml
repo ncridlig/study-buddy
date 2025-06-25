@@ -132,8 +132,8 @@ services:
       # Exposes the Next.js app on localhost:3000
       - "3000:3000"
     networks:
-      # Connects to the main backend network
-      - app-network
+      # Connects to its own isolated network
+      - frontend-network
     depends_on:
       # Ensures the backend is ready before the frontend is accessible,
       # though it will start building in parallel.
@@ -141,22 +141,19 @@ services:
     restart: always
 
 # === VOLUMES ===
+# By removing 'external: true', we let Docker Compose manage these volumes.
+# This is simpler for local development.
 volumes:
-  pgdata:
-    external: true
-  static_volume:
-    external: true
-  media_volume:
-    external: true
-  rd1-data:
-    external: true
-  rd2-data:
-    external: true
+  pgdata: {}
+  static_volume: {}
+  media_volume: {}
+  rd1-data: {}
+  rd2-data: {}
 
 # === NETWORKS ===
+# We've removed 'external: true' so Docker Compose will create these networks.
 networks:
   app-network:
-    external: true
   llm-app-network:
-    external: true
   shared-bridge:
+  frontend-network: {}
