@@ -4,6 +4,51 @@ from app.utils import validate_files_exist, BaseTaskWithFailureHandler, mark_tas
 from app import redis_client
 import time
 import requests
+import subprocess
+from pathlib import Path
+
+def prepare_question_and_answers(files, task_id, **kwargs):
+    dir_name = Path(f"{task_id}-query")
+    output_file = dir_name / "output.md"
+
+    image_size = str(kwargs.get("image_size", 300))
+    verbose = kwargs.get("verbose", True)
+    question_prompt = kwargs.get("question_prompt")
+    answer_prompt = kwargs.get("answer_prompt")
+
+    command = [
+        "python3.11", "-m", "study_friend.query",
+        "-pd", files,
+        "-id", str(dir_name),
+        "-o", str(output_file),
+        "--image_size", image_size
+    ]
+    if verbose:
+        command.append("--verbose")
+    
+    if question_prompt:
+        command.extend(["--question_prompt", question_prompt])
+
+    if answer_prompt:
+        command.extend(["--answer_prompt", answer_prompt])
+    
+    try:
+        result = subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=900  # 15 minute timeout
+        )
+        if not output_file.exists():
+            raise FileNotFoundError(f"Expected output file {output_file} not found.")
+        
+        return output_file.read_text(encoding="utf-8") # Markdown
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"study_friend query failed: {e.stderr}")
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("study_friend query timed out")
+
 
 celery_app = Celery("llm_tasks")
 
@@ -31,9 +76,8 @@ def process_qas_task(self, file_addresses: list[str], task_id: str):
     if not(json_payload):
         try:
             ####### Call to study_friend here #######
-            # json_payload = produce_QAs(file_addresses, task_id)
-            time.sleep(10)
-            markdown_content = validate_files_exist(file_addresses)
+            validate_files_exist(file_addresses)
+            markdown_content = prepare_question_and_answers(files=file_addresses, task_id=task_id)
             #########################################
             json_payload = {
                 "success": True,
