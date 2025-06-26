@@ -35,6 +35,27 @@ services:
       - media_volume:/app/media
     restart: always
 
+  llm-infer:
+    build:
+      context: .
+      dockerfile: Dockerfile.cuda  # <-- the second Dockerfile with CUDA
+    environment:
+      - STUDY_FRIEND_CUDA=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    networks:
+      - llm-app-network
+      - shared-bridge
+    volumes:
+      - media_volume:/app/media
+    depends_on:
+      - rd2
+    restart: always
+
   rd2:
     image: redis:alpine
     command: redis-server --appendonly yes --appendfsync everysec
