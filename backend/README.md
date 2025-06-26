@@ -66,6 +66,9 @@ Make a copy of `.env.production.example` and rename it as `.env`. Then edit `.en
 - `LLM_SERVICE_URL`  
   This variable defines the endpoint of the LLM microservice to which the backend sends Q&A generation requests.
 
+- `CSRF_TRUSTED_ORIGINS`  
+  This variable is used to define a list (similar to `ALLOWED_ORIGINS` and `ALLOWED_HOSTS`) of trusted origins for Cross-Site Request Forgery (CSRF) protection. In production phase, the ip and/or the domain addresses can be added to this list
+
 ## 2. 📦 Create Docker volumes and network
 
 you must create the external volumes and network used by docker-compose.yml:
