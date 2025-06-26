@@ -1,0 +1,36 @@
+FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu22.04
+
+# Set non-interactive mode for apt and install basic dependencies
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.11 and pip, minimal system deps only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11-dev \
+    python3.11-venv \
+    python3.11-distutils \
+    python3-pip \
+    curl \
+    ca-certificates \
+    git \
+    poppler-utils \
+    build-essential \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python \
+    && ln -sf /usr/bin/pip3 /usr/bin/pip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code
+COPY study_friend /app/
+
+# Set environment variable
+ENV STUDY_FRIEND_CUDA=1
+
+# Install Python dependencies
+RUN python -m pip install --upgrade pip && \
+    python -m pip install .
+
+
+# Entry point for cloud run job
+ENTRYPOINT [ "python3.11", "-m", "study_friend.query" ]

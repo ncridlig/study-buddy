@@ -79,3 +79,13 @@ To stop and remove all containers:
 ```bash
 docker-compose down -v
 ```
+
+## 🧠 LLM 
+The image extraction and large language model inference lives in the study-friend directory. To run locally:
+
+```bash
+cd study-friend
+python3.11 -m venv venv
+source venv/bin/activate
+python -m pip install . 
+```

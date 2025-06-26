@@ -77,7 +77,7 @@ services:
     networks:
       - app-network
 
-  # === SERVICE 2 (LLM Microservice) === (might need to have a volume)
+  # === SERVICE 2 (LLM Microservice) ===
   rd2:
     image: redis:alpine
     command: redis-server --appendonly yes --appendfsync everysec
@@ -120,6 +120,24 @@ services:
       - shared-bridge
     volumes:
       - media_volume:/app/media
+    restart: always
+
+  # === SERVICE 3 (Frontend) ===
+  frontend:
+    build:
+      # This context points to your frontend folder
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      # Exposes the Next.js app on localhost:3000
+      - "3000:3000"
+    networks:
+      # Connects to the main backend network
+      - app-network
+    depends_on:
+      # Ensures the backend is ready before the frontend is accessible,
+      # though it will start building in parallel.
+      - nginx
     restart: always
 
 # === VOLUMES ===
