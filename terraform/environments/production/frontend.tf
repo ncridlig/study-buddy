@@ -18,6 +18,7 @@ resource "google_cloud_run_v2_service_iam_binding" "frontend_public_access" {
   location = google_cloud_run_v2_service.frontend.location
   name     = google_cloud_run_v2_service.frontend.name
 
-  role   = "roles/run.invoker"
-  member = "allUsers"
+  role = "roles/run.invoker"
+  # ===== THIS IS THE CORRECTED LINE =====
+  members = ["allUsers"]
 }
