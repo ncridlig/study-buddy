@@ -123,22 +123,22 @@ services:
     restart: always
 
   # === SERVICE 3 (Frontend) ===
+# The Next.js frontend application.
   frontend:
     build:
-      # This context points to your frontend folder
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      # Exposes the Next.js app on localhost:3000
       - "3000:3000"
     networks:
-      # Connects to the main backend network
-      - app-network
+      # Connects to its own isolated network. It can only reach Nginx.
+      - frontend-network
     depends_on:
-      # Ensures the backend is ready before the frontend is accessible,
-      # though it will start building in parallel.
-      - nginx
-    restart: always
+      # Ensures the reverse proxy is started, but doesn't guarantee the backend is fully available.
+      # The frontend app should handle API connection errors gracefully.
+      nginx:
+        condition: service_started
+    restart: unless-stopped
 
 # === VOLUMES ===
 volumes:
@@ -160,3 +160,6 @@ networks:
   llm-app-network:
     external: true
   shared-bridge:
+
+  frontend-network:
+    driver: bridge
