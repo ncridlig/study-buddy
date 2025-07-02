@@ -8,26 +8,21 @@ on:
     branches:
       - main
 
-# This env block is personalized for your project.
 env:
   GCP_PROJECT_ID: "gruppo-11"
-  GCP_REGION: "europe-west1" # Using the region you chose for the bucket
+  GCP_REGION: "europe-west1"
   GCP_SA_EMAIL: "github-terraform@gruppo-11.iam.gserviceaccount.com"
   WIF_PROVIDER: "projects/236113564589/locations/global/workloadIdentityPools/study-buddy-github-pool/providers/github-provider"
   TF_WORKING_DIR: "./terraform/environments/production"
   ARTIFACT_REPO: "study-buddy-repo"
 
 jobs:
-  # =================================================================
-  # NEW: Filter Job - Determines which code has changed
-  # =================================================================
   filter:
     runs-on: ubuntu-latest
     outputs:
       frontend: ${{ steps.filter.outputs.frontend }}
       backend: ${{ steps.filter.outputs.backend }}
       llm-service: ${{ steps.filter.outputs.llm-service }}
-      # The 'infra' output is true if the workflow or terraform files change
       infra: ${{ steps.filter.outputs.infra }}
     steps:
       - uses: actions/checkout@v4
@@ -45,9 +40,6 @@ jobs:
               - '.github/workflows/cicd-pipeline.yml'
               - 'terraform/**'
 
-  # =================================================================
-  # Linting and Security Scanning Job
-  # =================================================================
   security-and-lint:
     runs-on: ubuntu-latest
     steps:
@@ -64,12 +56,40 @@ jobs:
           working_directory: ${{ env.TF_WORKING_DIR }}
 
   # =================================================================
+  # NEW JOB: Create Shared Infrastructure First
+  # =================================================================
+  terraform-apply-shared-infra:
+    needs: [security-and-lint]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.GCP_SA_EMAIL }}
+      - name: Deploy Artifact Registry and Enable APIs
+        run: |
+          cd ${{ env.TF_WORKING_DIR }}
+          terraform init
+          # This command targets ONLY the shared resources
+          terraform apply -auto-approve \
+            -target=google_project_service.run_api \
+            -target=google_project_service.artifactregistry_api \
+            -target=google_project_service.iam_api \
+            -target=google_artifact_registry_repository.study_buddy_repo
+
+  # =================================================================
   # Build and Deploy FRONTEND Job
   # =================================================================
   build-and-deploy-frontend:
-    # This job now depends on the filter job
-    needs: [security-and-lint, filter]
-    # This job now checks the output of the filter job to decide if it should run
+    # This job now depends on the infra and filter jobs
+    needs: [terraform-apply-shared-infra, filter]
     if: github.event_name == 'push' && (needs.filter.outputs.frontend == 'true' || needs.filter.outputs.infra == 'true')
     runs-on: ubuntu-latest
     permissions:
@@ -102,17 +122,17 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-      - name: Deploy Frontend with Terraform
+      - name: Deploy Frontend Service with Terraform
         run: |
+          cd ${{ env.TF_WORKING_DIR }}
           terraform init -reconfigure
           terraform apply -auto-approve -var="frontend_image_tag=${{ github.sha }}" -target=google_cloud_run_v2_service.frontend -target=google_cloud_run_v2_service_iam_binding.frontend_public_access
-        working-directory: ${{ env.TF_WORKING_DIR }}
 
   # =================================================================
   # Build and Deploy BACKEND Job
   # =================================================================
   build-and-deploy-backend:
-    needs: [security-and-lint, filter]
+    needs: [terraform-apply-shared-infra, filter]
     if: github.event_name == 'push' && (needs.filter.outputs.backend == 'true' || needs.filter.outputs.infra == 'true')
     runs-on: ubuntu-latest
     permissions:
@@ -145,17 +165,17 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-      - name: Deploy Backend with Terraform
+      - name: Deploy Backend Service with Terraform
         run: |
+          cd ${{ env.TF_WORKING_DIR }}
           terraform init -reconfigure
           terraform apply -auto-approve -var="backend_image_tag=${{ github.sha }}" -target=google_cloud_run_v2_service.backend
-        working-directory: ${{ env.TF_WORKING_DIR }}
 
   # =================================================================
   # Build and Deploy LLM-SERVICE Job
   # =================================================================
   build-and-deploy-llm-service:
-    needs: [security-and-lint, filter]
+    needs: [terraform-apply-shared-infra, filter]
     if: github.event_name == 'push' && (needs.filter.outputs['llm-service'] == 'true' || needs.filter.outputs.infra == 'true')
     runs-on: ubuntu-latest
     permissions:
@@ -190,6 +210,6 @@ jobs:
           severity: 'CRITICAL,HIGH'
       - name: Deploy LLM Service with Terraform
         run: |
+          cd ${{ env.TF_WORKING_DIR }}
           terraform init -reconfigure
           terraform apply -auto-approve -var="llm_service_image_tag=${{ github.sha }}" -target=google_cloud_run_v2_service.llm_service
-        working-directory: ${{ env.TF_WORKING_DIR }}
