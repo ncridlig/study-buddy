@@ -7,7 +7,7 @@ variable "gcp_project_id" {
 variable "gcp_region" {
   description = "The GCP region for resources."
   type        = string
-  default     = "europe-west8" # Milan, Italy
+  default     = "europe-west1" # Milan, Italy
 }
 
 variable "frontend_image_tag" {
