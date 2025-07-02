@@ -55,6 +55,7 @@ jobs:
         with:
           working_directory: ${{ env.TF_WORKING_DIR }}
 
+  # This job now passes dummy variables to the apply command
   terraform-apply-shared-infra:
     needs: [security-and-lint]
     if: github.event_name == 'push'
@@ -65,7 +66,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      # ===== THIS STEP WAS MISSING =====
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Authenticate to Google Cloud
@@ -77,7 +77,12 @@ jobs:
         run: |
           cd ${{ env.TF_WORKING_DIR }}
           terraform init
+          # ===== THIS COMMAND IS NOW FIXED =====
+          # We pass dummy values for the image tags to prevent Terraform from prompting for them.
           terraform apply -auto-approve \
+            -var="frontend_image_tag=dummy" \
+            -var="backend_image_tag=dummy" \
+            -var="llm_service_image_tag=dummy" \
             -target=google_project_service.run_api \
             -target=google_project_service.artifactregistry_api \
             -target=google_project_service.iam_api \
@@ -93,7 +98,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      # ===== THIS STEP WAS MISSING =====
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Authenticate to Google Cloud
@@ -136,7 +140,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      # ===== THIS STEP WAS MISSING =====
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Authenticate to Google Cloud
@@ -179,7 +182,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      # ===== THIS STEP WAS MISSING =====
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Authenticate to Google Cloud
