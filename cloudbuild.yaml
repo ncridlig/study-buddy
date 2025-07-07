@@ -2,6 +2,14 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
+# 0. Fetch backend secrets from Secret Manager and write to backend/.env
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      gcloud secrets versions access 1 --secret="backend" > backend/.env
+      
 # 1. Build and push the Backend image
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA', './backend']
