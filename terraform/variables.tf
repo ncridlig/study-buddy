@@ -8,28 +8,51 @@ variable "gcp_region" {
   type        = string
 }
 
-variable "db_instance_name" {
-  description = "db instance name"
-  type        = string
+# GCP Compute Engine Machine Type
+variable "machine_type" {
+  description = "Compute Engine Machine Type"
+  type = string
 }
 
-variable "NAME" {
-  description = "DB Name"
-  type        = string
+# variable "db_instance_name" {
+#   description = "db instance name"
+#   type        = string
+# }
+
+# variable "NAME" {
+#   description = "DB Name"
+#   type        = string
+# }
+
+# variable "USER" {
+#   description = "DB User"
+#   type        = string
+# }
+
+# variable "PASSWORD" {
+#   description = "DB Password"
+#   type        = string
+#   sensitive   = true
+# }
+
+# variable "DB_TIER" {
+#   description = "DB Tier"
+#   type        = string
+# }
+
+
+######## USED FOR LOCAL ########
+# Environment Variable
+variable "environment" {
+  description = "Environment Variable used as a prefix"
+  type = string
+  default = "dev"  # Developement
 }
 
-variable "USER" {
-  description = "DB User"
-  type        = string
+# Business Division
+variable "business_divsion" {
+  description = "Business Division in the large organization this Infrastructure belongs"
+  type = string
+  default = "sap"  # Systems, Applications & Products
 }
-
-variable "PASSWORD" {
-  description = "DB Password"
-  type        = string
-  sensitive   = true
-}
-
-variable "DB_TIER" {
-  description = "DB Tier"
-  type        = string
-}
+#################################
