@@ -26,6 +26,7 @@ export default function Home() {
   }, []);
 
   return (
+    <>
     <Container maxWidth="md" sx={{ textAlign: 'center', py: 10 }}>
       <Typography variant="h2" fontWeight="bold" gutterBottom>
         {isLoggedIn ? `Hello, ${userName}!` : 'Meet Your Study Buddy'}
@@ -42,7 +43,7 @@ export default function Home() {
             color="primary"
             size="large"
             component={Link}
-            href="/dashboard"
+            href="/dashboard/projects"
           >
             Go to Dashboard
           </Button>
@@ -85,5 +86,6 @@ export default function Home() {
         </Typography>
       </Box>
     </Container>
+    </>
   );
 }
