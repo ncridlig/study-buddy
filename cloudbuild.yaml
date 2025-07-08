@@ -25,7 +25,7 @@ steps:
     - 'clusters'
     - 'get-credentials'
     - 'study-buddy-cluster'
-    - '--zone=europe-west1-b' # Your cluster's zone
+    - '--zone=europe-west1' # Your cluster's zone
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: 'kubectl'
   args:
