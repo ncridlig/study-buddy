@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy source code
-COPY study_friend /app/
+COPY study-friend /app/
 
 # Set environment variable
 ENV STUDY_FRIEND_CUDA=1
