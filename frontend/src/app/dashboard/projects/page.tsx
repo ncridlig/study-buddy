@@ -6,6 +6,7 @@ import { Box, Typography, Grid, CircularProgress } from '@mui/material';
 // Import the new ProjectCard component
 import ProjectCard from '@/components/ProjectCard'; // Adjust the import path as needed
 
+import Cookies from 'js-cookie';
 // Define the project data structure
 interface Project {
   id: string;
@@ -23,7 +24,7 @@ export default function ProjectList() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const authToken = localStorage.getItem('authToken'); // Get your auth token
+        const authToken = Cookies.get('access_token'); // Get your auth token
         console.log("auth", authToken)
         const response = await fetch(`${API_BASE_URL}/topic/topics/`, {
           headers: {

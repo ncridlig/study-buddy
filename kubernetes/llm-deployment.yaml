@@ -1,0 +1,67 @@
+# kubernetes/llm-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-service-deployment
+  labels:
+    app: llm-service
+spec:
+  # Start with 1 replica. LLM services can be resource-heavy.
+  # You can scale this later if needed.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm-service
+  template:
+    metadata:
+      labels:
+        app: llm-service
+    spec:
+      containers:
+      - name: llm-service
+        # This should match the image you pushed to Artifact Registry
+        image: europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/llm-service:latest
+        ports:
+        - containerPort: 8001 # The port your LLM service listens on
+        
+        # --- IMPORTANT: Resource Requests and Limits ---
+        # LLM services are memory and CPU intensive. Uncommenting and adjusting
+        # this section is highly recommended to ensure your service runs reliably.
+        # If you plan to use GPUs, you will need to configure a GPU node pool.
+        resources:
+          requests:
+            memory: "4Gi" # Request 4 Gigabytes of memory
+            cpu: "1"      # Request 1 full CPU core
+          limits:
+            memory: "8Gi" # Allow up to 8 Gigabytes of memory
+            cpu: "2"      # Allow up to 2 full CPU cores
+
+        # Add any environment variables your LLM service needs.
+        # For example, you might need to specify which model to load.
+        # Use Kubernetes Secrets for sensitive data like API keys.
+        env:
+        - name: MODEL_NAME
+          value: "mistralai/Mistral-7B-Instruct-v0.2" # Example
+        # - name: HUGGINGFACE_API_KEY
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: your-secrets # The name of your k8s secret
+        #       key: hf-api-key   # The key within the secret
+
+---
+# This Service makes the LLM deployment available to other services
+# inside the cluster (like your backend).
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service-svc
+spec:
+  # ClusterIP means this service is only reachable from within the cluster.
+  type: ClusterIP
+  selector:
+    app: llm-service
+  ports:
+  - protocol: TCP
+    port: 8001
+    targetPort: 8001
