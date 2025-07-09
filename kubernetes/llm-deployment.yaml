@@ -7,8 +7,6 @@ metadata:
   labels:
     app: llm-service
 spec:
-  # Start with 1 replica. LLM services can be resource-heavy.
-  # You can scale this later if needed.
   replicas: 1
   selector:
     matchLabels:
@@ -18,50 +16,48 @@ spec:
       labels:
         app: llm-service
     spec:
+      # --- NEW: Node Selector for GPUs ---
+      # This ensures the pod is scheduled only on nodes that have a T4 GPU.
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-t4
       containers:
       - name: llm-service
-        # This should match the image you pushed to Artifact Registry
+        # IMPORTANT: For GPUs, you should use an image built from your Dockerfile.cuda
+        # which likely contains the necessary CUDA libraries.
         image: europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/llm-service:latest
         ports:
-        - containerPort: 8001 # The port your LLM service listens on
+        - containerPort: 8001
         
-        # --- IMPORTANT: Resource Requests and Limits ---
-        # LLM services are memory and CPU intensive. Uncommenting and adjusting
-        # this section is highly recommended to ensure your service runs reliably.
-        # If you plan to use GPUs, you will need to configure a GPU node pool.
         resources:
-          requests:
-            memory: "4Gi" # Request 4 Gigabytes of memory
-            cpu: "1"      # Request 1 full CPU core
+          # --- UPDATED: GPU Resource Limits ---
+          # We've added the nvidia.com/gpu resource to request a GPU.
           limits:
-            memory: "8Gi" # Allow up to 8 Gigabytes of memory
-            cpu: "2"      # Allow up to 2 full CPU cores
+            memory: "16Gi" # T4 GPUs have 16Gi of memory, so request enough system RAM.
+            cpu: "2"
+            nvidia.com/gpu: 1
+          requests:
+            memory: "8Gi"
+            cpu: "1"
 
-        # Add any environment variables your LLM service needs.
-        # For example, you might need to specify which model to load.
-        # Use Kubernetes Secrets for sensitive data like API keys.
-        env:
-        - name: MODEL_NAME
-          value: "mistralai/Mistral-7B-Instruct-v0.2" # Example
+        # env:
+        # - name: MODEL_NAME
+        #   value: "mistralai/Mistral-7B-Instruct-v0.2"
         # - name: HUGGINGFACE_API_KEY
         #   valueFrom:
         #     secretKeyRef:
-        #       name: your-secrets # The name of your k8s secret
-        #       key: hf-api-key   # The key within the secret
+        #       name: your-secrets
+        #       key: hf-api-key
 
 ---
-# This Service makes the LLM deployment available to other services
-# inside the cluster (like your backend).
 apiVersion: v1
 kind: Service
 metadata:
   name: llm-service-svc
 spec:
-  # ClusterIP means this service is only reachable from within the cluster.
   type: ClusterIP
   selector:
     app: llm-service
   ports:
   - protocol: TCP
     port: 8001
-    targetPort: 8001
+    targetPort: 8000

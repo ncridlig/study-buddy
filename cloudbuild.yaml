@@ -26,8 +26,15 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA', './llm-service']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA']
-
+  # This is what it should be
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '-t'
+    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA'
+    - '-f' # This flag specifies the Dockerfile to use
+    - 'llm-service/Dockerfile.cuda'
+    - './llm-service' # The build context directory
 # 4. Trigger Cloud Deploy pipeline
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: 'gcloud'
