@@ -23,9 +23,9 @@ steps:
   args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA']
 
 # 3. Build and push the LLM-Service image
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA', './llm-service']
-- name: 'gcr.io/cloud-builders/docker'
+# - name: 'gcr.io/cloud-builders/docker'
+#   args: ['build', '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA', './llm-service']
+# - name: 'gcr.io/cloud-builders/docker'
   # This is what it should be
 - name: 'gcr.io/cloud-builders/docker'
   args:
