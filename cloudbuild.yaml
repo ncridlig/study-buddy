@@ -35,7 +35,7 @@ steps:
     - 'deploy'
     - 'releases'
     - 'create'
-    - 'release-$DATE-$TIME'
+    - 'release-$COMMIT_SHA'
     - '--delivery-pipeline=study-buddy-pipeline'
     - '--region=europe-west1'
     - '--images=backend=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA,frontend=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA,llm-service=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA'
