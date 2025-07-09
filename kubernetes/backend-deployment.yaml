@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend:latest # IMPORTANT: Replace with your image path
+        image: europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend:latest
         ports:
         - containerPort: 8000
         env:
