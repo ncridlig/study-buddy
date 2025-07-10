@@ -11,6 +11,7 @@ from pathlib import Path
 logger = get_task_logger(__name__)
 # python -m study_friend.query -d "/pdfs/" -o "/pdfs/out.md" -oi "/pdfs/images/"
 # python -m study_friend.query -d '["/pdfs/AlexNet.pdf", "/pdfs/14 evaluation - testing.pdf"]' -o "/pdfs/out.md" -oi "/pdfs/images/"
+# python -m study_friend.query -d '["/data/14-humans.pdf", "/data/10-InformationArchitecture.pdf"]' -o "/data/question-answer.md" -oi "/data/images/"
 # python3.11 -m study_friend.query -d "/home/nicolas/Documents/pdfs" -o "/home/nicolas/Documents/pdfs/out.md" -oi "/home/nicolas/Documents/images"
 # python3.11 -m study_friend.query -d '["/home/nicolas/Documents/pdfs/AlexNet.pdf", "/home/nicolas/Documents/pdfs/14 evaluation - testing.pdf"]' -o "/home/nicolas/Documents/pdfs/out.md" -oi "/home/nicolas/Documents/images"
 
@@ -25,11 +26,18 @@ def prepare_question_and_answers(files, task_id, **kwargs):
 
     command = [
         "python", "-m", "study_friend.query",
-        "-d", f"'{files}'",
-        "-oi", str(dir_name),
-        "-o", str(output_file),
-        "--image_size", image_size
+        "-d", '["/pdfs/AlexNet.pdf", "/pdfs/14 evaluation - testing.pdf"]',
+        "-oi", "/pdfs/images/",
+        "-o", "/pdfs/out.md"
     ]
+
+    # command = [
+    #     "python", "-m", "study_friend.query",
+    #     "-d", f"'{files}'",
+    #     "-oi", str(dir_name),
+    #     "-o", str(output_file),
+    #     "--image_size", image_size
+    # ]
     if verbose:
         command.append("--verbose")
     
@@ -47,7 +55,7 @@ def prepare_question_and_answers(files, task_id, **kwargs):
             check=True,
             capture_output=True,
             text=True,
-            timeout=900  # 15 minute timeout
+            timeout=3600  # 1 hour timeout
         )
         if not output_file.exists():
             raise FileNotFoundError(f"Expected output file {output_file} not found.")
