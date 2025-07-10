@@ -56,3 +56,19 @@ variable "business_divsion" {
   default = "sap"  # Systems, Applications & Products
 }
 #################################
+
+
+######## BUCKET NAMES ########
+variable "static_bucket_name" {
+  description = "Bucket for static files"
+  type        = string
+  default     = "static-volume"
+}
+
+variable "media_bucket_name" {
+  description = "Bucket for media files"
+  type        = string
+  default     = "media-volume"
+}
+#################################
+
