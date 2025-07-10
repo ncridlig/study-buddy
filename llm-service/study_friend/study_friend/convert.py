@@ -52,22 +52,29 @@ def convert_pdfs_to_images(pdf_dir, image_size, img_dir, verbose = False):
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
 
+    # Determine the list of PDF files
+    if isinstance(pdf_dir, str) and os.path.isdir(pdf_dir):
+        pdf_files = [
+            os.path.join(pdf_dir, f)
+            for f in os.listdir(pdf_dir)
+            if f.lower().endswith(".pdf")
+        ]
+    elif isinstance(pdf_dir, list):
+        pdf_files = [f for f in pdf_dir if f.lower().endswith(".pdf") and os.path.isfile(f)]
+    else:
+        raise ValueError("pdf_dir must be a directory path or a list of PDF file paths.")
+
     # iterate over pdfs
-    for _fileName in tqdm(os.listdir(pdf_dir), desc="Pdf2images"):
-        # get complete file name
-        fileName = os.path.join(pdf_dir, _fileName)
-        # skip if not pdf
-        if not os.path.isfile(fileName) or not os.path.splitext(fileName)[1].lower() == ".pdf":
-            continue
+    for file_path in tqdm(pdf_files, desc="Pdf2images"):
         if verbose:
-            print(f"Converting {fileName}")
+            print(f"Converting {file_path}")
         # subdir is just filename without filetype
-        subDirName = os.path.splitext(fileName)[0]
+        subDirName = os.path.splitext(os.path.basename(file_path))[0]
         output_subdir = os.path.join(img_dir, subDirName)
         os.makedirs(output_subdir, exist_ok=True)
-        output_dirs += [subDirName]
+        output_dirs += [output_subdir]
         # convert slides
-        images = pdf2image.convert_from_path(fileName)
+        images = pdf2image.convert_from_path(file_path)
         # create images names
         imageNames = [str(i) for i in range(len(images))]
         # save images

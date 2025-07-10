@@ -31,11 +31,13 @@ RUN python -m pip install --upgrade pip && \
     python -m pip install --no-cache-dir -r requirements.txt
 
 # Install study_friend as a local package
-RUN python -m pip install ./study-friend
+RUN python -m pip install ./study_friend[cuda]
 
 # For PYTHONPATH-based resolution
 ENV PYTHONPATH=/app
 
 # Setup an app user so the container doesn't run as the root user
-RUN useradd app
-USER app
+# I need write permissions to the hf_cache volume and to the /app/media directory
+# to store the images and the output markdown files
+# RUN useradd app
+# USER app

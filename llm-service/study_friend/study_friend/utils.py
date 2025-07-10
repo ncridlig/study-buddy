@@ -12,14 +12,14 @@ def add_argument_convert(parser):
         This functions adds conversion arguments to the parser.
     """
     parser.add_argument("-im", "--image_size", type=int, default=DEFAULT_IMAGE_SIZE, help="The size of the images to resize to.")
-    parser.add_argument("-pd", "--pdf_dir", type=str, default=".", help="The directory from where pdfs are stored.")
-    parser.add_argument("-id", "--img_dir", type=str, default=".", help="The directory from where images are stored.")
+    parser.add_argument("-d", "--dir", type=str, default=".", help="The directory from where pdfs and images are stored.")
 
 def add_argument_query(parser):
     """
         This functions adds query arguments to the parser.
     """
     parser.add_argument("-o", "--output_file", type=str, default=OUTPUT_FILE, help="The file to write the model response into.")
+    parser.add_argument("-oi", "--output_image", type=str, default="", help="The directory to write the images into.")
     parser.add_argument("-m", "--model", type=str, default=DEFAULT_MODEL, help="The model to query with.")
     parser.add_argument("-e", "--engine", type=str, default=DEFAULT_ENGINE, choices=[e.value for e in Engine], help=f"Type of Engine to use, can be: {' | '.join([e.value for e in Engine])}")
     parser.add_argument("-id", "--image_dir", type=str, default="", help="Direct path of dir containing images to process.")
@@ -77,7 +77,7 @@ def print_args(args):
 
 def get_device():
     """
-        This functions retrive the correct device for this machine.
+        This function retrieves the correct device for this machine.
     """
     device = torch.device('cpu')
     if torch.cuda.is_available():

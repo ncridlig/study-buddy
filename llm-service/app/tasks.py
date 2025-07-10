@@ -1,4 +1,5 @@
 from celery import Celery
+from celery.utils.log import get_task_logger
 from app.settings import settings
 from app.utils import validate_files_exist, BaseTaskWithFailureHandler, mark_task_as_dangling
 from app import redis_client
@@ -6,6 +7,12 @@ import time
 import requests
 import subprocess
 from pathlib import Path
+
+logger = get_task_logger(__name__)
+# python -m study_friend.query -d "/pdfs/" -o "/pdfs/out.md" -oi "/pdfs/images/"
+# python -m study_friend.query -d '["/pdfs/AlexNet.pdf", "/pdfs/14 evaluation - testing.pdf"]' -o "/pdfs/out.md" -oi "/pdfs/images/"
+# python3.11 -m study_friend.query -d "/home/nicolas/Documents/pdfs" -o "/home/nicolas/Documents/pdfs/out.md" -oi "/home/nicolas/Documents/images"
+# python3.11 -m study_friend.query -d '["/home/nicolas/Documents/pdfs/AlexNet.pdf", "/home/nicolas/Documents/pdfs/14 evaluation - testing.pdf"]' -o "/home/nicolas/Documents/pdfs/out.md" -oi "/home/nicolas/Documents/images"
 
 def prepare_question_and_answers(files, task_id, **kwargs):
     dir_name = Path(f"{task_id}-query")
@@ -17,9 +24,9 @@ def prepare_question_and_answers(files, task_id, **kwargs):
     answer_prompt = kwargs.get("answer_prompt")
 
     command = [
-        "python3.11", "-m", "study_friend.query",
-        "-pd", files,
-        "-id", str(dir_name),
+        "python", "-m", "study_friend.query",
+        "-d", f"'{files}'",
+        "-oi", str(dir_name),
         "-o", str(output_file),
         "--image_size", image_size
     ]
@@ -31,6 +38,8 @@ def prepare_question_and_answers(files, task_id, **kwargs):
 
     if answer_prompt:
         command.extend(["--answer_prompt", answer_prompt])
+
+    logger.info(f"[prepare_question_and_answers] Running command: {' '.join(command)}")
     
     try:
         result = subprocess.run(
@@ -42,6 +51,9 @@ def prepare_question_and_answers(files, task_id, **kwargs):
         )
         if not output_file.exists():
             raise FileNotFoundError(f"Expected output file {output_file} not found.")
+        
+        logger.info(f"STDOUT:\n{result.stdout}")
+        logger.warning(f"STDERR:\n{result.stderr}")
         
         return output_file.read_text(encoding="utf-8") # Markdown
     except subprocess.CalledProcessError as e:
@@ -96,13 +108,13 @@ def process_qas_task(self, file_addresses: list[str], task_id: str):
     try:
         response = requests.post(settings.BACKEND_URL, json=json_payload)
         response.raise_for_status()
-        print(f"Response from backend for task {task_id}: {response.text} with status code {response.status_code}")
+        logger.info(f"Response from backend for task {task_id}: {response.text} with status code {response.status_code}")
         if response.status_code in settings.VALID_RESPONSE_CODES:
             redis_client.delete_key(task_id)
         else:
             ## If the response code is not valid, mark the task as dangling
             ## This is just for saving the such tasks (if they happened in real scenarios, then we can think about handling them)
-            print(f'Dangling task occured for {task_id}: {response.text} with status code {response.status_code}')
+            logger.warning(f'Dangling task occured for {task_id}: {response.text} with status code {response.status_code}')
             # mark_task_as_dangling(task_id)
     except requests.RequestException as exc:
         raise self.retry(exc=exc)

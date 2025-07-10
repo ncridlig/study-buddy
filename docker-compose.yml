@@ -104,23 +104,29 @@ services:
       - shared-bridge
     restart: always
 
-  llm-worker:
-    build:
-      context: ./llm-service
-      dockerfile: Dockerfile
-    env_file:
-      - ./llm-service/.env
-    command: >
-      sh -c "celery -A celery_worker.celery_app worker -l info"
-    depends_on:
-      - rd2
-      - llm-api
-    networks:
-      - llm-app-network
-      - shared-bridge
-    volumes:
-      - media_volume:/app/media
-    restart: always
+    llm-worker:
+      build:
+        context: ./llm-service
+        dockerfile: Dockerfile.cuda  # inference
+      env_file:
+        - ./llm-service/.env
+      command: >
+        sh -c "celery -A celery_worker.celery_app worker -l info"
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                capabilities: [gpu]
+      networks:
+        - llm-app-network
+        - shared-bridge
+      volumes:
+        - media_volume:/app/media
+      depends_on:
+        - rd2
+        - llm-api
+      restart: always
 
   # === SERVICE 3 (Frontend) ===
 # The Next.js frontend application.

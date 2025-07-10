@@ -16,6 +16,8 @@ services:
       - llm-app-network
       - shared-bridge
     restart: always
+    # volumes:
+    #   - /home/nicolas/Documents/pdfs:/pdfs # for testing
 
   llm-worker:
     build:
@@ -36,6 +38,7 @@ services:
       - shared-bridge
     volumes:
       - media_volume:/app/media
+      # - /home/nicolas/Documents/pdfs:/pdfs
     depends_on:
       - rd2
       - llm-api

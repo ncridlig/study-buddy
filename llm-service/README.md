@@ -81,10 +81,10 @@ docker-compose down -v
 ```
 
 ## 🧠 LLM 
-The image extraction and large language model inference lives in the study-friend directory. To run locally:
+The image extraction and large language model inference lives in the study_friend package. To run locally:
 
 ```bash
-cd study-friend
+cd study_friend
 python3.11 -m venv venv
 source venv/bin/activate
 python -m pip install . 
