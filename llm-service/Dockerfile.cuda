@@ -2,6 +2,8 @@ FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu22.04
 
 # Set non-interactive mode for apt and install basic dependencies
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Install Python 3.11 and pip, minimal system deps only
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -21,16 +23,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set working directory
 WORKDIR /app
 
-# Copy source code
-COPY study-friend /app/
+# Copy full app code
+COPY . /app/
 
-# Set environment variable
-ENV STUDY_FRIEND_CUDA=1
-
-# Install Python dependencies
+# Install Celery dependencies
 RUN python -m pip install --upgrade pip && \
-    python -m pip install .
+    python -m pip install --no-cache-dir -r requirements.txt
 
+# Install study_friend as a local package
+RUN python -m pip install ./study-friend
 
-# Entry point for cloud run job
-ENTRYPOINT [ "python3.11", "-m", "study_friend.query" ]
+# For PYTHONPATH-based resolution
+ENV PYTHONPATH=/app
+
+# Setup an app user so the container doesn't run as the root user
+RUN useradd app
+USER app

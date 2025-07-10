@@ -20,27 +20,11 @@ services:
   llm-worker:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cuda  # inference
     env_file:
       - .env
     command: >
       sh -c "celery -A celery_worker.celery_app worker -l info"
-    depends_on:
-      - rd2
-      - llm-api
-    networks:
-      - llm-app-network
-      - shared-bridge
-    volumes:
-      - media_volume:/app/media
-    restart: always
-
-  llm-infer:
-    build:
-      context: .
-      dockerfile: Dockerfile.cuda  # <-- the second Dockerfile with CUDA
-    environment:
-      - STUDY_FRIEND_CUDA=1
     deploy:
       resources:
         reservations:
@@ -54,6 +38,7 @@ services:
       - media_volume:/app/media
     depends_on:
       - rd2
+      - llm-api
     restart: always
 
   rd2:
