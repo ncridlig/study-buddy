@@ -29,12 +29,12 @@ resource "kubernetes_deployment_v1" "llm-redis" {
                 volume {
                     name = "llm-redis-storage"
                     persistent_volume_claim {
-                        claim_name = kubernetes_persistent_volume_claim_v1.rd1_pvc.metadata[0].name
+                        claim_name = kubernetes_persistent_volume_claim_v1.llm-redis_pvc.metadata[0].name
                     }
                 }
 
                 container {
-                    name  = "redis"       # # Must match the VPA container name
+                    name  = "llm-redis"       # # Must match the VPA container name
                     image = "redis:alpine"
 
                     command = [
@@ -88,18 +88,18 @@ resource "kubernetes_service_v1" "llm-redis" {
 
 
 # Vertical pod autoscaler for redis db of backend
-resource "kubernetes_manifest" "myapp1_vpa" {
+resource "kubernetes_manifest" "llm_redis_vpa" {
     manifest = {
         apiVersion = "autoscaling.k8s.io/v1"
         kind       = "VerticalPodAutoscaler"
         metadata = {
-            name      = "rd1-vpa"
+            name      = "llm-rd-vpa"
             namespace = "default"
         }
         spec = {
             targetRef = {
                 kind       = "Deployment"
-                name       = kubernetes_deployment_v1.redis.metadata[0].name 
+                name       = kubernetes_deployment_v1.llm-redis.metadata[0].name 
                 apiVersion = "apps/v1"
             }
             updatePolicy = {
@@ -108,7 +108,7 @@ resource "kubernetes_manifest" "myapp1_vpa" {
             resourcePolicy = {
                 containerPolicies = [
                     {
-                        containerName       = "redis"  # Must match the deployment container name
+                        containerName       = "llm-redis"  # Must match the deployment container name
                         mode                = "Auto"
                         controlledResources = [
                             "cpu",

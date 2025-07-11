@@ -150,3 +150,46 @@ variable "GS_BUCKET_MEDIA_NAME" {
 #     type        = string
 # }
 #################################
+
+
+######## USED FOR LLM ########
+variable "REDIS_HOST_LLM" {
+  description = "Redis hostname for LLM"
+  type        = string
+}
+
+variable "BACKEND_URL" {
+  description = "Backend callback URL for LLM results"
+  type        = string
+}
+
+variable "ASYNC_JOB_MAX_RETRIES" {
+  description = "Max retries for async jobs"
+  type        = string
+}
+
+variable "ASYNC_JOB_RETRY_DELAY" {
+  description = "Retry delay for async jobs (seconds)"
+  type        = string
+}
+
+variable "ASYNC_JOB_TIMEOUT" {
+  description = "Timeout for async jobs (seconds)"
+  type        = string
+}
+
+variable "MARK_LEFTOVER_RESULT_KEY" {
+  description = "Key for leftover results"
+  type        = string
+}
+
+variable "MARK_DANGLING_RESULT_KEY" {
+  description = "Key for dangling results"
+  type        = string
+}
+
+variable "STUDY_FRIEND_CUDA" {
+  description = "Enable CUDA for study friend (1 to enable)"
+  type        = bool
+}
+#################################
