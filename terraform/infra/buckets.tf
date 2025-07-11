@@ -26,6 +26,13 @@ resource "google_storage_bucket_iam_member" "media_writer" {
     member = "serviceAccount:${google_service_account.gke_sa.email}"
 }
 
+# Read permission for media
+resource "google_storage_bucket_iam_member" "media_reader" {
+    bucket = google_storage_bucket.media.name
+    role   = "roles/storage.objectViewer"
+    member = "serviceAccount:${google_service_account.llm_sa.email}"
+}
+
 output "static_bucket_name" {
     value = google_storage_bucket.static.name
 }
