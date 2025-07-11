@@ -128,3 +128,25 @@ variable "CSRF_TRUSTED_ORIGINS" {
 }
 #################################
 
+
+######## USED FOR BACKEND (RELATED TO GCP) ########
+variable "ON_CLOUD" {
+    description = "The App is on Cloud or Local"
+    type        = string
+}
+
+variable "GS_BUCKET_STATIC_NAME" {
+    description = "Staticfiles Bucket Name"
+    type        = string
+}
+
+variable "GS_BUCKET_MEDIA_NAME" {
+    description = "Media Bucket Name"
+    type        = string
+}
+
+# variable "GOOGLE_APPLICATION_CREDENTIALS" {
+#     description = "Credentials"
+#     type        = string
+# }
+#################################

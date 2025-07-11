@@ -21,6 +21,11 @@ resource "kubernetes_secret_v1" "backend_env" {
         ALLOWED_ORIGINS             = var.ALLOWED_ORIGINS
         LLM_SERVICE_URL             = var.LLM_SERVICE_URL
         CSRF_TRUSTED_ORIGINS        = var.CSRF_TRUSTED_ORIGINS
+        ON_CLOUD                    = var.ON_CLOUD
+        GS_PROJECT_ID               = var.gcp_project_id
+        GS_BUCKET_STATIC_NAME       = var.GS_BUCKET_STATIC_NAME
+        GS_BUCKET_MEDIA_NAME        = var.GS_BUCKET_MEDIA_NAME
+        # GOOGLE_APPLICATION_CREDENTIALS = var.GOOGLE_APPLICATION_CREDENTIALS
     }
 
     type = "Opaque"

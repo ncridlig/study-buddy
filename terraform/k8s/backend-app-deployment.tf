@@ -29,8 +29,8 @@ resource "kubernetes_deployment_v1" "backend" {
 
                 container {
                     name  = "backend"
-                    # image = "europe-west1-docker.pkg.dev/gruppo-11/microservice-docker-repo/backend:latest"
-                    image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend:latest"
+                    image = "europe-west1-docker.pkg.dev/gruppo-11/microservice-docker-repo/backend:latest"
+                    # image = "europe-west1-docker.pkg.dev/gruppo-11/microservice-docker-repo/backend:debug"
 
                     env_from {
                         secret_ref {
@@ -46,22 +46,17 @@ resource "kubernetes_deployment_v1" "backend" {
 
                     args = [
                         "python /app/manage.py collectstatic --noinput && python /app/manage.py migrate && python /app/manage.py init_admin && daphne -b 0.0.0.0 -p 8000 study.asgi:application"
-                    ]
-
-                    volume_mount {
-                        name       = "static-volume"
-                        mount_path = "/app/static"
-                    }   
+                    ]  
 
                     resources {
                         requests = {
-                            cpu    = "250m"
-                            memory = "256Mi"
+                            cpu    = "300m"
+                            memory = "512Mi"
                         }
 
                         limits = {
-                            cpu    = "1000m"
-                            memory = "1Gi"
+                            cpu    = "1500m"
+                            memory = "2Gi"
                         }
                     }
                 }

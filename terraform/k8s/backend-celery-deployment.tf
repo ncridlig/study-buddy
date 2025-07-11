@@ -28,8 +28,8 @@ resource "kubernetes_deployment_v1" "backend_celery" {
 
                 container {
                     name  = "celery"
-                    # image = "europe-west1-docker.pkg.dev/gruppo-11/microservice-docker-repo/backend:latest"
-                    image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend:latest"
+                    image = "europe-west1-docker.pkg.dev/gruppo-11/microservice-docker-repo/backend:latest"
+                    # image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend:latest"
 
                     command = ["/bin/sh", "-c"]
 
