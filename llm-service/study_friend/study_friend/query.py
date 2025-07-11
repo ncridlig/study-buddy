@@ -4,6 +4,7 @@ import re
 import numpy as np
 from natsort import natsorted
 from tqdm import tqdm
+from ast import literal_eval
 
 from .utils import (
     add_argument_common,
@@ -172,7 +173,8 @@ def main(args=None):
     # let's use a temp file to store raw responses
     temp_file = args.output_file + "_temp"
     # let's call the functions with the arguments
-    dirs = convert_pdfs_to_images(args.pdf_dir, args.image_size, args.img_dir) if args.image_dir == "" else [args.image_dir]
+    pdf_input = literal_eval(args.dir) if args.dir.strip().startswith("[") else args.dir
+    dirs = convert_pdfs_to_images(pdf_input, args.image_size, args.output_image) if args.image_dir == "" else [args.image_dir]
     # let's load the model
     model, processor, config = load_model(args.engine, args.model, args.verbose)
     # let's group images

@@ -1,0 +1,16 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+manifests:
+  rawYaml:
+  - kubernetes/*.yaml
+metadata:
+  name: study-buddy
+build:
+  artifacts:
+    - image: europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend
+    - image: europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/frontend
+    - image: europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/llm-service
+  googleCloudBuild:
+    projectId: ${PROJECT_ID}
+deploy:
+  kubectl: {}

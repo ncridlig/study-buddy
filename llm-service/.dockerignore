@@ -1,4 +1,39 @@
-.venv
+# Python virtual environments
+.venv/
 venv/
+study_friend/venv/
 
-__pycache__/
+# Python cache and build artifacts
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
+study_friend/build/
+study_friend/study_friend.egg-info/
+study_friend/study_friend/build/
+study_friend/study_friend/study_friend.egg-info/
+
+# Environment and config files
+.env.production.example
+
+# Docker and Compose files
+Dockerfile
+Dockerfile.cuda
+docker-compose.yml
+
+# Documentation
+README.md
+
+# VCS
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db

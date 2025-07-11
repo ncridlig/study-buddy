@@ -6,7 +6,7 @@ Also topics, need to have the image conversion storage, and finally the markdown
 
 This is the LLM-service for the study-buddy project.
 
-**The rest of explanations for LLM part need to be added**
+The main part is a celery worker which has study_friend, the inference LLM engine, built as a local package. Then there is an API which connects this service to the backend. Finally, there is redis store for persistence across different queries.
 
 ---
 
@@ -81,10 +81,10 @@ docker-compose down -v
 ```
 
 ## 🧠 LLM 
-The image extraction and large language model inference lives in the study-friend directory. To run locally:
+The image extraction and large language model inference lives in the study_friend package. To run locally:
 
 ```bash
-cd study-friend
+cd study_friend
 python3.11 -m venv venv
 source venv/bin/activate
 python -m pip install . 

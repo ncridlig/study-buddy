@@ -1,0 +1,63 @@
+# kubernetes/llm-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-service-deployment
+  labels:
+    app: llm-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm-service
+  template:
+    metadata:
+      labels:
+        app: llm-service
+    spec:
+      # --- NEW: Node Selector for GPUs ---
+      # This ensures the pod is scheduled only on nodes that have a T4 GPU.
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-t4
+      containers:
+      - name: llm-service
+        # IMPORTANT: For GPUs, you should use an image built from your Dockerfile.cuda
+        # which likely contains the necessary CUDA libraries.
+        image: europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/llm-service:latest
+        ports:
+        - containerPort: 8001
+        
+        resources:
+          # --- UPDATED: GPU Resource Limits ---
+          # We've added the nvidia.com/gpu resource to request a GPU.
+          limits:
+            memory: "16Gi" # T4 GPUs have 16Gi of memory, so request enough system RAM.
+            cpu: "2"
+            nvidia.com/gpu: 1
+          requests:
+            memory: "8Gi"
+            cpu: "1"
+
+        # env:
+        # - name: MODEL_NAME
+        #   value: "mistralai/Mistral-7B-Instruct-v0.2"
+        # - name: HUGGINGFACE_API_KEY
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: your-secrets
+        #       key: hf-api-key
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: llm-service
+  ports:
+  - protocol: TCP
+    port: 8001
+    targetPort: 8000
