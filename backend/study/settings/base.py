@@ -2,6 +2,8 @@ from pathlib import Path
 from datetime import timedelta
 from django.utils.translation import gettext_lazy as _
 from decouple import config 
+from google.auth import default, impersonated_credentials
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -10,6 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="").split()
+ON_CLOUD = config('ON_CLOUD', default=False, cast=bool)
 
 
 # Application definition
@@ -35,6 +38,9 @@ INSTALLED_APPS = [
 
     # swagger
     'drf_yasg',
+
+    # GCP
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -101,16 +107,50 @@ USE_I18N = True
 USE_TZ = True
 
 
-# STATIC CONFIG
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATIC_DIR = BASE_DIR / 'static'
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [STATIC_DIR, ]
+if ON_CLOUD:
+    GS_BUCKET_STATIC_NAME = config("GS_BUCKET_STATIC_NAME")
+    GS_BUCKET_MEDIA_NAME = config("GS_BUCKET_MEDIA_NAME")
+    GS_BUCKET_NAME = GS_BUCKET_STATIC_NAME
 
+    source_creds, _ = default()
 
-# Media
-MEDIA_ROOT = BASE_DIR / 'media'
-MEDIA_URL = '/media/'
+    target_creds = impersonated_credentials.Credentials(
+        source_credentials=source_creds,
+        target_principal="hr-dev-storage-access-sa@gruppo-11.iam.gserviceaccount.com",
+        target_scopes=["https://www.googleapis.com/auth/devstorage.full_control"],  # adjust if needed
+        lifetime=3600
+    )
+
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": GS_BUCKET_STATIC_NAME,
+                "credentials": target_creds,
+            },
+        },
+        "default": {
+            "BACKEND": "study.storage_backends.MediaRootGoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": GS_BUCKET_MEDIA_NAME,
+                "credentials": target_creds,
+            },
+        },
+    }
+
+    STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_STATIC_NAME}/"
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_MEDIA_NAME}/"
+
+else:
+    # STATIC CONFIG
+    STATIC_URL = '/static/'
+    STATIC_DIR = BASE_DIR / 'static'
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    STATICFILES_DIRS = [STATIC_DIR, ]
+
+    # Media
+    MEDIA_ROOT = BASE_DIR / 'media'
+    MEDIA_URL = '/media/'
 
 
 # Default primary key field type
