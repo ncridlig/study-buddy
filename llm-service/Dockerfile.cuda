@@ -23,15 +23,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set working directory
 WORKDIR /app
 
-# Copy full app code
-COPY . /app/
+# Copy study_friend
+COPY ./study_friend /app/study_friend
 
-# Install Celery dependencies
+# Build the study_friend package
+RUN python -m pip install ./study_friend[cuda]
+
+# Copy requirements file
+COPY requirements.txt /app/requirements.txt
+
+# Install Celery and FastAPI
 RUN python -m pip install --upgrade pip && \
     python -m pip install --no-cache-dir -r requirements.txt
 
-# Install study_friend as a local package
-RUN python -m pip install ./study_friend[cuda]
+# Copy rest of the app
+COPY . /app/
 
 # For PYTHONPATH-based resolution
 ENV PYTHONPATH=/app

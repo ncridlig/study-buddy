@@ -7,67 +7,71 @@ import time
 import requests
 import subprocess
 from pathlib import Path
+import json
 
 logger = get_task_logger(__name__)
 # python -m study_friend.query -d "/pdfs/" -o "/pdfs/out.md" -oi "/pdfs/images/"
 # python -m study_friend.query -d '["/pdfs/AlexNet.pdf", "/pdfs/14 evaluation - testing.pdf"]' -o "/pdfs/out.md" -oi "/pdfs/images/"
-# python -m study_friend.query -d '["/data/14-humans.pdf", "/data/10-InformationArchitecture.pdf"]' -o "/data/question-answer.md" -oi "/data/images/"
+# python -m study_friend.query -d '["data/14-humans.pdf", "data/10-InformationArchitecture.pdf"]' -oi 'data/images/' -o 'data/question-answer.md' --image_size 300
 # python3.11 -m study_friend.query -d "/home/nicolas/Documents/pdfs" -o "/home/nicolas/Documents/pdfs/out.md" -oi "/home/nicolas/Documents/images"
 # python3.11 -m study_friend.query -d '["/home/nicolas/Documents/pdfs/AlexNet.pdf", "/home/nicolas/Documents/pdfs/14 evaluation - testing.pdf"]' -o "/home/nicolas/Documents/pdfs/out.md" -oi "/home/nicolas/Documents/images"
 
 def prepare_question_and_answers(files, task_id, **kwargs):
-    dir_name = Path(f"{task_id}-query")
-    output_file = dir_name / "output.md"
-
-    image_size = str(kwargs.get("image_size", 300))
-    verbose = kwargs.get("verbose", True)
-    question_prompt = kwargs.get("question_prompt")
-    answer_prompt = kwargs.get("answer_prompt")
-
-    command = [
-        "python", "-m", "study_friend.query",
-        "-d", '["/pdfs/AlexNet.pdf", "/pdfs/14 evaluation - testing.pdf"]',
-        "-oi", "/pdfs/images/",
-        "-o", "/pdfs/out.md"
-    ]
-
-    # command = [
-    #     "python", "-m", "study_friend.query",
-    #     "-d", f"'{files}'",
-    #     "-oi", str(dir_name),
-    #     "-o", str(output_file),
-    #     "--image_size", image_size
-    # ]
-    if verbose:
-        command.append("--verbose")
-    
-    if question_prompt:
-        command.extend(["--question_prompt", question_prompt])
-
-    if answer_prompt:
-        command.extend(["--answer_prompt", answer_prompt])
-
-    logger.info(f"[prepare_question_and_answers] Running command: {' '.join(command)}")
-    
     try:
-        result = subprocess.run(
-            command,
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=3600  # 1 hour timeout
-        )
-        if not output_file.exists():
-            raise FileNotFoundError(f"Expected output file {output_file} not found.")
+        print(f"Files: {files}, Task ID: {task_id}, kwargs: {kwargs}")
+
+        dir_name = Path(f"data/task-{task_id}")
+        output_file = dir_name / "question-answer.md"
+        print(dir_name, output_file)
+
+        image_size = str(kwargs.get("image_size", 300))
+        verbose = kwargs.get("verbose", True)
+        question_prompt = kwargs.get("question_prompt")
+        answer_prompt = kwargs.get("answer_prompt")
+
+        print(f"image_size: {image_size}, verbose: {verbose}, question_prompt: {question_prompt}, answer_prompt: {answer_prompt}")
+
+        command = [
+            "python", "-m", "study_friend.query",
+            "-d", json.dumps(files),
+            "-oi", str(dir_name),
+            "-o", str(output_file),
+            "--image_size", image_size
+        ]
+
+        if verbose:
+            command.append("--verbose")
         
-        logger.info(f"STDOUT:\n{result.stdout}")
-        logger.warning(f"STDERR:\n{result.stderr}")
+        if question_prompt:
+            command.extend(["--question_prompt", question_prompt])
+
+        if answer_prompt:
+            command.extend(["--answer_prompt", answer_prompt])
+
+        logger.info(f"[prepare_question_and_answers] Running command: {' '.join(command)}")
         
-        return output_file.read_text(encoding="utf-8") # Markdown
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"study_friend query failed: {e.stderr}")
-    except subprocess.TimeoutExpired:
-        raise RuntimeError("study_friend query timed out")
+        try:
+            result = subprocess.run(
+                command,
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=3600  # 1 hour timeout
+            )
+            if not output_file.exists():
+                raise FileNotFoundError(f"Expected output file {output_file} not found.")
+            
+            logger.info(f"STDOUT:\n{result.stdout}")
+            logger.warning(f"STDERR:\n{result.stderr}")
+            
+            return output_file.read_text(encoding="utf-8") # Markdown
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"study_friend query failed: {e.stderr}")
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("study_friend query timed out")
+    except Exception as e:
+        logger.error(f"Error in prepare_question_and_answers: {e}", exc_info=True)
+        return ""
 
 
 celery_app = Celery("llm_tasks")
