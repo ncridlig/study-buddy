@@ -22,33 +22,45 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA']
 
-# 3. Build and push the LLM-Service image
-# - name: 'gcr.io/cloud-builders/docker'
-#   args: ['build', '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA', './llm-service']
-# - name: 'gcr.io/cloud-builders/docker'
-  # This is what it should be
+# 3a. Build and push the LLM-Service worker image
 - name: 'gcr.io/cloud-builders/docker'
   args:
     - 'build'
     - '-t'
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA'
+    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA'
     - '-f' # This flag specifies the Dockerfile to use
     - 'llm-service/Dockerfile.cuda'
     - './llm-service' # The build context directory
-# 4. Trigger Cloud Deploy pipeline
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  entrypoint: 'gcloud'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA']
+
+# 3b. Build and push the LLM-Service api image
+- name: 'gcr.io/cloud-builders/docker'
   args:
-    - 'deploy'
-    - 'releases'
-    - 'create'
-    - 'release-$SHORT_SHA'
-    - '--delivery-pipeline=study-buddy-pipeline'
-    - '--region=europe-west1'
-    - '--images=backend=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA,frontend=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA,llm-service=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA'
+    - 'build'
+    - '-t'
+    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA'
+    - '-f' # This flag specifies the Dockerfile to use
+    - 'llm-service/Dockerfile'
+    - './llm-service' # The build context directory
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA']
+
+# # 4. Trigger Cloud Deploy pipeline (commented out since we are switching to Terraform)
+# - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+#   entrypoint: 'gcloud'
+#   args:
+#     - 'deploy'
+#     - 'releases'
+#     - 'create'
+#     - 'release-$SHORT_SHA'
+#     - '--delivery-pipeline=study-buddy-pipeline'
+#     - '--region=europe-west1'
+#     - '--images=backend=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA,frontend=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA,llm-service=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA'
 
 images:
 - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA'
 - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA'
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA'
+- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA'
+- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA'
 
