@@ -40,3 +40,20 @@ output "static_bucket_name" {
 output "media_bucket_name" {
     value = google_storage_bucket.media.name
 }
+
+#Frontend Bucket
+resource "google_storage_bucket" "frontend_bucket" {
+    name          = var.frontend_bucket_name
+    location      = var.gcp_region
+    force_destroy = true # Set to false in production
+    uniform_bucket_level_access = true
+}
+
+# Admin permission for frontend
+resource "google_storage_bucket_iam_member" "frontend_writer" {
+    bucket = google_storage_bucket.frontend_bucket.name
+    role   = "roles/storage.objectAdmin"
+    member = "serviceAccount:${google_service_account.frontend_sa.email}"
+}
+
+#Maybe we need outputs for the frontend and the llm

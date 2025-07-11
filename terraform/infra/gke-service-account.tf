@@ -28,4 +28,16 @@ output "llm-sa-name" {
 }
 ############################################################
 
-######## A separate service account for Frontend (TO-DO)? ########
+######## A separate service account for Frontend ########
+resource "google_service_account" "frontend_sa" {
+    account_id   = "${local.name}-frontend-sa"
+    display_name = "${local.name} Frontend Service Account"
+}
+
+output "frontend-sa-email" {
+    value = google_service_account.frontend_sa.email
+}
+
+output "frontend-sa-name" {
+    value = google_service_account.frontend_sa.name
+}

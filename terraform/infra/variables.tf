@@ -72,3 +72,8 @@ variable "media_bucket_name" {
 }
 #################################
 
+variable "frontend_bucket_name" {
+  description = "Bucket for frontend files"
+  type        = string
+  default     = "frontend-volume"
+}
