@@ -21,22 +21,27 @@ def prepare_question_and_answers(files, task_id, **kwargs):
         print(f"Files: {files}, Task ID: {task_id}, kwargs: {kwargs}")
 
         dir_name = Path(f"data/task-{task_id}")
+        output_dir = kwargs.get("output_dir") or dir_name
+        if not isinstance(output_dir, Path):
+            output_dir = Path(output_dir)
+        output_file = output_dir / "question-answer.md"
 
-        image_size = str(kwargs.get("image_size", 300))
-        verbose = kwargs.get("verbose", True)
+        image_size = kwargs.get("image_size") or 300
+        verbose = kwargs.get("verbose")
+        if verbose is None:
+            verbose = False
+
         question_prompt = kwargs.get("question_prompt")
         answer_prompt = kwargs.get("answer_prompt")
-        output_dir = kwargs.get("output_dir", dir_name)
 
-        output_file = output_dir / "question-answer.md"
-        print(f"image_size: {image_size}, verbose: {verbose}, question_prompt: {question_prompt}, answer_prompt: {answer_prompt}, outout_file: {output_file}")
+        print(f"image_size: {image_size}, verbose: {verbose}, question_prompt: {question_prompt}, answer_prompt: {answer_prompt}, output_file: {output_file}")
 
         command = [
             "python", "-m", "study_friend.query",
             "-d", json.dumps(files),
             "-oi", str(dir_name),
             "-o", str(output_file),
-            "--image_size", image_size
+            "--image_size", str(image_size)
         ]
 
         if verbose:

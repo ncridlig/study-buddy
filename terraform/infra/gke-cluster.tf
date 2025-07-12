@@ -21,4 +21,20 @@ resource "google_container_cluster" "gke_cluster" {
     vertical_pod_autoscaling {
         enabled = true
     } 
+
+    ######## THE GCS BUCKET DRIVER IS AUTOMATICALLY INSTALLED AND MANAGED WITH AUTOPILOT CLUSTERS, TURN THIS ON
+    ######## IF YOU DO NOT WANT TO HAVE TO DESTROY AND CREATE THE CLUSTER EVERY TIME
+    # Run the GKE Metadata Server on this node (necessary for gcs_fuse_csi_driver)
+    node_config {
+        workload_metadata_config {
+            mode = "GKE_METADATA"
+        }
+    }
+
+    # Allow mounting buckets
+    addons_config {
+        gcs_fuse_csi_driver_config {
+            enabled = true
+        }
+    }
 }

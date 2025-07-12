@@ -20,6 +20,9 @@ resource "kubernetes_deployment_v1" "llm-worker" {
                 labels = {
                     app = "llm-worker"
                 }
+                annotations = {
+                    "gke-gcsfuse/volumes" = "true"
+                }
             }
 
             spec {
@@ -51,16 +54,36 @@ resource "kubernetes_deployment_v1" "llm-worker" {
 
                     resources {
                         requests = {
+                            cpu    = "0.5"
+                            memory = "2Gi"
+                            "nvidia.com/gpu" = 1
+                        }
+                        limits = {
                             cpu    = "1"
                             memory = "4Gi"
                             "nvidia.com/gpu" = 1
                         }
-                        limits = {
-                            cpu    = "2"
-                            memory = "8Gi"
-                            "nvidia.com/gpu" = 1
-                        }
                     }
+
+                    # Mount the volume inside the container at /data
+                    volume_mount {
+                        name       = "gcsfuse-volume"
+                        mount_path = "/media-volume"
+                        read_only  = true
+                    }
+                }
+
+                # Define the CSI volume for GCS Fuse
+                volume {
+                name = "gcsfuse-volume"
+
+                csi {
+                    driver = "gcsfuse.csi.storage.gke.io"
+                    volume_attributes = {
+                    bucketName   = "media-volume"
+                    mountOptions = "implicit-dirs"
+                    }
+                }
                 }
             }
         }
