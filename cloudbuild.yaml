@@ -46,6 +46,18 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA']
 
+# 4a. Tag the 3a image as 'latest' and push them for automatic deployment
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['tag', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest']
+
+# 4b. Tag the 3b image as 'latest' and push it for automatic deployment
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['tag', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest']
+
 # # 4. Trigger Cloud Deploy pipeline (commented out since we are switching to Terraform)
 # - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
 #   entrypoint: 'gcloud'
@@ -63,4 +75,3 @@ images:
 - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA'
 - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA'
 - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA'
-

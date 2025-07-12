@@ -34,6 +34,7 @@ resource "kubernetes_deployment_v1" "llm-worker" {
                 container {
                     name  = "llm-worker"
                     image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/llm-worker:latest"
+                    image_pull_policy = "Always"
                     # image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/llm-worker:debug"
 
                     env_from {

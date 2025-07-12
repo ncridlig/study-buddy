@@ -30,6 +30,7 @@ resource "kubernetes_deployment_v1" "llm-api" {
                 container {
                     name  = "llm-api"
                     image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/llm-api:latest"
+                    image_pull_policy = "Always"
                     # image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/llm-api:debug"
 
                     env_from {
