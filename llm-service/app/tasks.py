@@ -21,15 +21,15 @@ def prepare_question_and_answers(files, task_id, **kwargs):
         print(f"Files: {files}, Task ID: {task_id}, kwargs: {kwargs}")
 
         dir_name = Path(f"data/task-{task_id}")
-        output_file = dir_name / "question-answer.md"
-        print(dir_name, output_file)
 
         image_size = str(kwargs.get("image_size", 300))
         verbose = kwargs.get("verbose", True)
         question_prompt = kwargs.get("question_prompt")
         answer_prompt = kwargs.get("answer_prompt")
+        output_dir = kwargs.get("output_dir", dir_name)
 
-        print(f"image_size: {image_size}, verbose: {verbose}, question_prompt: {question_prompt}, answer_prompt: {answer_prompt}")
+        output_file = output_dir / "question-answer.md"
+        print(f"image_size: {image_size}, verbose: {verbose}, question_prompt: {question_prompt}, answer_prompt: {answer_prompt}, outout_file: {output_file}")
 
         command = [
             "python", "-m", "study_friend.query",
@@ -94,14 +94,14 @@ celery_app.conf.update(
         max_retries=settings.ASYNC_JOB_MAX_RETRIES, # the task runs a total of (max_retries + 1) times
         default_retry_delay=settings.ASYNC_JOB_RETRY_DELAY
         )
-def process_qas_task(self, file_addresses: list[str], task_id: str):
+def process_qas_task(self, file_addresses: list[str], task_id: str, **kwargs):
 
     json_payload = redis_client.get_json(task_id)
     if not(json_payload):
         try:
             ####### Call to study_friend here #######
             validate_files_exist(file_addresses)
-            markdown_content = prepare_question_and_answers(files=file_addresses, task_id=task_id)
+            markdown_content = prepare_question_and_answers(files=file_addresses, task_id=task_id, **kwargs)
             #########################################
             json_payload = {
                 "task_id": int(task_id),
