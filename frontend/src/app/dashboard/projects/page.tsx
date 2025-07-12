@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   CircularProgress,
   Button,
-  Alert
+  Alert,
 } from '@mui/material';
+import { Grid } from '@mui/material';;
 import Cookies from 'js-cookie';
 
 // Import the components you have
@@ -91,12 +91,13 @@ export default function ProjectsPage() {
         {projects.length > 0 ? (
           projects.map((project) => (
             // The Grid item provides spacing and responsive layout for each card
-            <Grid item xs={12} sm={6} md={4} key={project.id}>
+            <Grid size={{ xs: 12, md: 4, sm: 6 }} key={project.id}>
+            {/* <Grid item  size={{xs={12} sm={6} md={4}}} > */}
               <ProjectCard project={project} />
             </Grid>
           ))
         ) : (
-          <Grid item xs={12}>
+          <Grid size={{xs: 12}}>
             <Typography sx={{ p: 2, m: 2 }}>
               No projects found. Click `Create New Topic`` to get started.
             </Typography>

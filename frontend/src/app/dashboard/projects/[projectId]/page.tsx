@@ -21,6 +21,7 @@ interface QaGenerationTask {
   result_file: string | null; // URL to a markdown file
 }
 
+
 // Helper function to parse Q&A from markdown text
 const parseQaMarkdown = (markdown: string): Question[] => {
   if (!markdown) return [];
@@ -40,7 +41,7 @@ const parseQaMarkdown = (markdown: string): Question[] => {
   return questions;
 };
 
-export default function ProjectDetailPage({ params }: { params: { projectId: string } }) {
+export default function ProjectDetailPage({ params }: { params: any}) {
   // State for data and UI status
   const [files, setFiles] = useState<PdfFile[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
