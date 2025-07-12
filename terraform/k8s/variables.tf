@@ -193,3 +193,11 @@ variable "STUDY_FRIEND_CUDA" {
   type        = bool
 }
 #################################
+
+######## USED FOR Frontend ########
+variable "NEXT_PUBLIC_API_URL" {
+  description = "For the frontend to send API calls to the backend"
+  type        = string
+}
+#################################
+
