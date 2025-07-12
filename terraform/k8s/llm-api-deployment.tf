@@ -60,6 +60,18 @@ resource "kubernetes_deployment_v1" "llm-api" {
                             memory = "512Mi"
                         }
                     }
+
+                    liveness_probe {
+                        http_get {
+                            path = "/healthz"
+                            port = 8000
+                        }
+                        initial_delay_seconds = 10
+                        period_seconds        = 10
+                        timeout_seconds       = 3
+                        failure_threshold     = 3
+                        success_threshold     = 1
+                    }
                 }
             }
         }
