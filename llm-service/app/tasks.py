@@ -104,15 +104,13 @@ def process_qas_task(self, file_addresses: list[str], task_id: str):
             markdown_content = prepare_question_and_answers(files=file_addresses, task_id=task_id)
             #########################################
             json_payload = {
-                "success": True,
-                "task_id": task_id,
-                "markdown_content": markdown_content
+                "task_id": int(task_id),
+                "markdown_content": str(markdown_content)
             }
         except Exception as e:
             json_payload = {
-                "success": False,
-                "task_id": task_id,
-                "error_message": str(e)
+                "task_id": int(task_id),
+                "markdown_content": str(f"ERROR occurred: {e}")
             }
 
         redis_client.set_json(task_id, json_payload)
@@ -126,7 +124,7 @@ def process_qas_task(self, file_addresses: list[str], task_id: str):
         else:
             ## If the response code is not valid, mark the task as dangling
             ## This is just for saving the such tasks (if they happened in real scenarios, then we can think about handling them)
-            logger.warning(f'Dangling task occured for {task_id}: {response.text} with status code {response.status_code}')
+            logger.warning(f'Dangling task occurred for {task_id}: {response.text} with status code {response.status_code}')
             # mark_task_as_dangling(task_id)
     except requests.RequestException as exc:
         raise self.retry(exc=exc)

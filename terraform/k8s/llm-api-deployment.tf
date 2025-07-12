@@ -81,7 +81,7 @@ resource "kubernetes_service_v1" "llm-api" {
         target_port = 8000
         }
 
-        type = "ClusterIP"
+        type = "LoadBalancer"
     }
 }
 

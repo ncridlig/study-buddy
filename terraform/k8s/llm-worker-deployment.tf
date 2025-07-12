@@ -76,6 +76,14 @@ resource "kubernetes_service_v1" "llm-worker" {
         app = "llm-worker"
         }
 
+        # Add at least one port even if unused
+    port {
+        name        = "dummy"
+        port        = 5555
+        target_port = 5555
+        protocol    = "TCP"
+        }
+
         type = "ClusterIP"
     }
 }
@@ -102,7 +110,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "llm-worker_hpa" {
                 name = "cpu"
                 target {
                     type               = "Utilization"
-                    average_utilization = 60
+                    average_utilization = 90
                 }
             }
         }
@@ -113,7 +121,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "llm-worker_hpa" {
                 name = "memory"
                 target {
                     type               = "Utilization"
-                    average_utilization = 70
+                    average_utilization = 90
                 }
             }
         }
