@@ -56,7 +56,7 @@ def prepare_question_and_answers(files, task_id, **kwargs):
                 check=True,
                 capture_output=True,
                 text=True,
-                timeout=3600  # 1 hour timeout
+                timeout=3600  # 1 hour timeout, make into the same variable as ASYNC_JOB_TIMEOUT
             )
             if not output_file.exists():
                 raise FileNotFoundError(f"Expected output file {output_file} not found.")

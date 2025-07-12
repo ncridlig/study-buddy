@@ -27,9 +27,9 @@ resource "google_container_node_pool" "gpu_pool" {
   cluster    = google_container_cluster.gke_cluster.name
 
   node_config {
-    machine_type = "n1-standard-8"
+    machine_type = "n1-standard-2" # -8 works but costs more
     guest_accelerator {
-      type  = "nvidia-tesla-t4"
+      type  = "nvidia-tesla-t4" # cheapest GPU
       count = 1
     }
     labels = {

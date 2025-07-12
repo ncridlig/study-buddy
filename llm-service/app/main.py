@@ -26,3 +26,8 @@ def generate_qas(request: QARequest):
         return {"message": "Task received", "task_id": task_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/healthz", summary="Health check endpoint")
+def health_check():
+    return {"status": "ok"}
+

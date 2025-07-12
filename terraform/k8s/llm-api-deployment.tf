@@ -51,13 +51,13 @@ resource "kubernetes_deployment_v1" "llm-api" {
 
                     resources {
                         requests = {
-                            cpu    = "300m"
-                            memory = "512Mi"
+                            cpu    = "100m"
+                            memory = "128Mi"
                         }
 
                         limits = {
-                            cpu    = "1500m"
-                            memory = "2Gi"
+                            cpu    = "500m"
+                            memory = "512Mi"
                         }
                     }
                 }
