@@ -5,7 +5,7 @@ import os
 
 def validate_files_exist(file_paths):
     """
-    Checks whether all provided file paths exist inside BASE_DIR.
+    Checks whether all provided file paths exist, appending BASE_DIR if necessary.
 
     Args:
         file_paths (list of str): Relative paths to check.
@@ -15,15 +15,13 @@ def validate_files_exist(file_paths):
     """
     base_dir = os.path.abspath(settings.BASE_DIR)
 
-    for relative_path in file_paths:
-        full_path = os.path.abspath(os.path.join(base_dir, relative_path))
+    for file_path in file_paths:
+        if not os.path.isabs(file_path):
+            file_path = os.path.abspath(os.path.join(base_dir, file_path))
 
-        # Safety check: prevent path traversal attacks outside BASE_DIR
-        if not full_path.startswith(base_dir):
-            raise Exception(f"Unsafe file path detected: {relative_path}")
-
-        if not os.path.isfile(full_path):
-            raise Exception(f"File not found: {relative_path}")
+        if not os.path.isfile(file_path):
+            print(f"File not found: {file_path}")
+            raise Exception(f"File not found: {file_path}")
 
     return True
 

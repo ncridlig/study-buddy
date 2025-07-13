@@ -108,14 +108,23 @@ def process_qas_task(self, file_addresses: list[str], task_id: str, **kwargs):
             validate_files_exist(file_addresses)
             markdown_content = prepare_question_and_answers(files=file_addresses, task_id=task_id, **kwargs)
             #########################################
+            
+            try:
+                markdown_content_str = str(markdown_content)
+            except Exception:
+                markdown_content_str = f"[Invalid markdown_content of type {type(markdown_content).__name__}]"
+
+            print(markdown_content_str)
+            
             json_payload = {
                 "task_id": int(task_id),
-                "markdown_content": str(markdown_content)
+                "markdown_content": markdown_content_str
             }
         except Exception as e:
+            logger.exception(f"Error while preparing QA content for task {task_id}")
             json_payload = {
                 "task_id": int(task_id),
-                "markdown_content": str(f"ERROR occurred: {e}")
+                "markdown_content": f"ERROR occurred: {e}"
             }
 
         redis_client.set_json(task_id, json_payload)
