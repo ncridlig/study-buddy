@@ -46,9 +46,9 @@ export default function PdfSidebar({ files, onUpload, onDelete, isLoading, isUpl
             <ListItem
               key={file.id}
               secondaryAction={
-                <IconButton edge="end" onClick={() => onDelete(file.id)}>
-                  <DeleteIcon />
-                </IconButton>
+                <IconButton edge="end" onClick={() => onDelete(file.id)} aria-label="delete">
+  <DeleteIcon />
+</IconButton>
               }
             >
               <ListItemText primary={file.filename} />

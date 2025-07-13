@@ -59,7 +59,7 @@ export default function Navbar() {
   const renderAuthButtons = () =>
     isLoggedIn ? (
       <>
-        <IconButton onClick={handleMenuClick} color="inherit">
+        <IconButton onClick={handleMenuClick} color="inherit" aria-label="menu">
           <Avatar sx={{ width: 32, height: 32 }} />
         </IconButton>
         <Menu
@@ -127,6 +127,7 @@ export default function Navbar() {
               <IconButton
                 color="inherit"
                 edge="end"
+                aria-label='delete'
                 onClick={() => setDrawerOpen(true)}
               >
                 <MenuIcon />
