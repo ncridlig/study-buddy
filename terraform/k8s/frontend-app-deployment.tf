@@ -3,11 +3,11 @@
 
 # Resource: Kubernetes Deployment for the Frontend Application
 # This manages the pods that run your frontend container.
-resource "kubernetes_deployment_v1" "frontend-app" {
+resource "kubernetes_deployment_v1" "frontend" {
   metadata {
-    name = "frontend-app"
+    name = "frontend"
     labels = {
-      app = "frontend-app"
+      app = "frontend"
     }
   }
 
@@ -16,14 +16,14 @@ resource "kubernetes_deployment_v1" "frontend-app" {
 
     selector {
       match_labels = {
-        app = "frontend-app"
+        app = "frontend"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "frontend-app"
+          app = "frontend"
         }
       }
 
@@ -33,9 +33,9 @@ resource "kubernetes_deployment_v1" "frontend-app" {
         service_account_name = kubernetes_service_account.frontend_k8s_sa.metadata[0].name
 
         container {
-          name  = "frontend-app"
+          name  = "frontend"
           # IMPORTANT: Replace this with the correct path to your frontend Docker image.
-          image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/frontend-app:latest"
+          image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/frontend:latest"
 
           # This block loads environment variables from the specified Kubernetes secret.
           # It's the standard way to inject configuration like API URLs into your application.
@@ -98,14 +98,14 @@ resource "kubernetes_deployment_v1" "frontend-app" {
 
 # Resource: Kubernetes Service for the Frontend
 # This exposes your frontend application to the internet via a GCP Load Balancer.
-resource "kubernetes_service_v1" "frontend-app" {
+resource "kubernetes_service_v1" "frontend" {
   metadata {
-    name = "frontend-app"
+    name = "frontend"
   }
 
   spec {
     selector = {
-      app = "frontend-app"
+      app = "frontend"
     }
 
     port {
@@ -122,9 +122,9 @@ resource "kubernetes_service_v1" "frontend-app" {
 
 # Resource: Horizontal Pod Autoscaler V2
 # This automatically scales the number of frontend pods based on CPU and memory usage.
-resource "kubernetes_horizontal_pod_autoscaler_v2" "frontend-app_hpa" {
+resource "kubernetes_horizontal_pod_autoscaler_v2" "frontend_hpa" {
   metadata {
-    name = "frontend-app-hpa"
+    name = "frontend-hpa"
   }
 
   spec {
@@ -134,7 +134,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "frontend-app_hpa" {
     scale_target_ref {
       api_version = "apps/v1"
       kind        = "Deployment"
-      name        = kubernetes_deployment_v1.frontend-app.metadata[0].name
+      name        = kubernetes_deployment_v1.frontend.metadata[0].name
     }
 
     # Scale up if CPU usage across all pods averages over 70%
