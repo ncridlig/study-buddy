@@ -16,7 +16,7 @@ COPY . .
 
 # 👇 Accept build-time argument and set it as environment variable
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=35.195.39.220
 
 RUN npm run build
 
