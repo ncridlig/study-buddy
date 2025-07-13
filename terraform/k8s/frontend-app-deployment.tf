@@ -41,7 +41,7 @@ resource "kubernetes_deployment_v1" "frontend" {
           # It's the standard way to inject configuration like API URLs into your application.
           env_from {
             secret_ref {
-              name = "fronten-env"
+              name = "frontend-env"
             }
           }
 
