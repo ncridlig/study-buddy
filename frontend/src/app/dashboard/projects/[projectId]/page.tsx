@@ -6,6 +6,7 @@ import { Box } from '@mui/material';
 import { AlertColor } from '@mui/material/Alert';
 import Cookies from 'js-cookie';
 import { PdfFile, Question } from '@/types';
+import { use } from 'react';
 
 // Import all the necessary child components
 import PdfSidebar from '@/components/PdfSidebar';
@@ -63,15 +64,17 @@ export default function ProjectDetailPage({ params }: { params: any}) {
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
+  const { projectId } = use(params) as { projectId: string };
+
   // --- Data Fetching ---
   useEffect(() => {
     const authToken = Cookies.get('access_token');
 
     const fetchFiles = async () => {
-      if (!params.projectId) return;
+      if (!projectId) return;
       setLoadingFiles(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/topic/topics/${params.projectId}/files/`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+        const response = await fetch(`${API_BASE_URL}/topic/topics/${projectId}/files/`, { headers: { 'Authorization': `Bearer ${authToken}` } });
         if (!response.ok) throw new Error(`Failed to fetch files: ${response.statusText}`);
         const data: PdfFile[] = await response.json();
         setFiles(data);
@@ -83,13 +86,13 @@ export default function ProjectDetailPage({ params }: { params: any}) {
     };
 
     const fetchQuestions = async () => {
-        if (!params.projectId) return;
+        if (!projectId) return;
         if (questions.length === 0) setLoadingQuestions(true);
         try {
             const taskResponse = await fetch(`${API_BASE_URL}/result/qa/`, { headers: { 'Authorization': `Bearer ${authToken}` } });
             if (!taskResponse.ok) throw new Error('Could not fetch QA tasks.');
             const allTasks: QaGenerationTask[] = await taskResponse.json();
-            const relevantTasks = allTasks.filter(task => task.topic === params.projectId && task.result_file);
+            const relevantTasks = allTasks.filter(task => task.topic === projectId && task.result_file);
             const allQuestions = await Promise.all(
                 relevantTasks.map(async (task) => {
                     const contentResponse = await fetch(task.result_file!, { headers: { 'Authorization': `Bearer ${authToken}` } });
@@ -133,7 +136,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ topic: params.projectId }),
+        body: JSON.stringify({ topic: projectId }),
       });
 
       if (response.status === 409) {
@@ -163,7 +166,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
     formData.append('file', file);
     try {
       const authToken = Cookies.get('access_token');
-      const response = await fetch(`${API_BASE_URL}/topic/topics/${params.projectId}/files/`, {
+      const response = await fetch(`${API_BASE_URL}/topic/topics/${projectId}/files/`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${authToken}` },
         body: formData,
@@ -192,7 +195,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
     if (!fileIdToDelete) return;
     try {
       const authToken = Cookies.get('access_token');
-      const response = await fetch(`${API_BASE_URL}/topic/topics/${params.projectId}/files/${fileIdToDelete}/`, {
+      const response = await fetch(`${API_BASE_URL}/topic/topics/${projectId}/files/${fileIdToDelete}/`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
@@ -211,7 +214,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
 
   // --- Render ---
   return (
-    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, height: 'calc(100vh - 64px)' }}>
+    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, height: 'calc(100vh - 64px)', mt: 5, pt: 5 }}>
       <FeedbackAlert
         open={alertState.open}
         message={alertState.message}
