@@ -14,10 +14,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# 👇 Accept build-time argument and set it as environment variable
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=35.195.39.220
-
 RUN npm run build
 
 FROM base AS runner

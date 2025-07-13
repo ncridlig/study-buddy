@@ -20,6 +20,9 @@ resource "kubernetes_deployment_v1" "backend" {
                 labels = {
                     app = "backend"
                 }
+                annotations = {
+                    "gke-gcsfuse/volumes" = "true"
+                }
             }
 
             spec {
@@ -59,6 +62,40 @@ resource "kubernetes_deployment_v1" "backend" {
                             memory = "2Gi"
                         }
                     }
+                    # Mount the volumes inside the container
+                    volume_mount {
+                        name       = "gcsfuse-media-volume"
+                        mount_path = "/app/media"
+                        read_only  = true
+                    }
+                    volume_mount {
+                        name       = "gcsfuse-static-volume"
+                        mount_path = "/app/staticfiles"
+                        read_only  = true
+                    }
+                }
+                # Define the CSI volumes for GCS Fuse
+                volume {
+                name = "gcsfuse-media-volume"
+
+                csi {
+                    driver = "gcsfuse.csi.storage.gke.io"
+                    volume_attributes = {
+                    bucketName   = "media-volume"
+                    mountOptions = "implicit-dirs"
+                    }
+                }
+                }
+                volume {
+                name = "gcsfuse-static-volume"
+
+                csi {
+                    driver = "gcsfuse.csi.storage.gke.io"
+                    volume_attributes = {
+                    bucketName   = "static-volume"
+                    mountOptions = "implicit-dirs"
+                    }
+                }
                 }
             }
         }

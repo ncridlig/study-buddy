@@ -12,7 +12,7 @@ resource "kubernetes_deployment_v1" "frontend" {
   }
 
   spec {
-    replicas = 2 # Start with two replicas for better availability
+    replicas = 1
 
     selector {
       match_labels = {
@@ -128,7 +128,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "frontend_hpa" {
   }
 
   spec {
-    min_replicas = 2
+    min_replicas = 1
     max_replicas = 15 # Set a max to control costs
 
     scale_target_ref {
