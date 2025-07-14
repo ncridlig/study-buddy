@@ -32,7 +32,7 @@ resource "kubernetes_deployment_v1" "backend" {
 
                 container {
                     name  = "backend"
-                    image = "europe-west1-docker.pkg.dev/gruppo-11/microservice-docker-repo/backend:latest"
+                    image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend:latest"
                     # image = "europe-west1-docker.pkg.dev/gruppo-11/microservice-docker-repo/backend:debug"
 
                     env_from {

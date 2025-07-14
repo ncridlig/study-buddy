@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
 from results.models import QAGenerationTask
 from results.serializers import QAGenerationTaskCreateSerializer
@@ -53,13 +54,15 @@ class QAGenerationTaskRetrieveAPIView(generics.RetrieveAPIView):
 
 @swagger_auto_schema(**schemas['LLM_CALLBACK_SCHEMA']['POST'])
 @api_view(['POST'])
-@require_POST
 def llm_callback(request):
-    try:
-        data = json.loads(request.body)
-        success = data.get("success")
-        task_id = data.get("task_id")
 
+    data = request.data
+    task_id = data.get("task_id")
+
+    try:
+        if not task_id:
+            return JsonResponse({"Message": _("Missing task_id")}, status=400)
+        
         try:
             task = QAGenerationTask.objects.select_related('topic__user').get(id=task_id)
         except QAGenerationTask.DoesNotExist:
@@ -68,83 +71,40 @@ def llm_callback(request):
         # should not happen in normal flow
         if task.status != settings.PROCESSING:
             return JsonResponse({"Message": _("Task is not in PROCESSING state.")}, status=409)
+        
+        if "markdown_content" in data:
+            markdown = data["markdown_content"]
 
-        if success:
-            markdown = data.get("markdown_content")
+            with transaction.atomic:
+                task.result_file.save(f"task_{task.id}_question-answer.md", ContentFile(markdown))
+                task.status = settings.SUCCESS
+                task.error_message = ""
+                task.save()
+                notify_task_status(task)
 
-            # Should not happen in normal flow
-            if not markdown:
-                return JsonResponse({"Message": _("Missing markdown_content")}, status=400)
-            
-            task.result_file.save("dummy.md", ContentFile(markdown))
-            task.status = settings.SUCCESS
-            task.save()
-            message, status_code = _("Success"), 200
-
-            # LLM-service should remove task-id after processing
-            return JsonResponse({"Message": message}, status=status_code)
-        else:
-            error_message = data.get("error_message")
-
-            # Should not happen in normal flow
-            if not error_message:
-                return JsonResponse({"Message": _("Missing error_message")}, status=400)
+            return JsonResponse({"Message": "Success"}, status=200)
+        
+        elif "error_message" in data:
+            error_message = data["error_message"]
             
             task.error_message = error_message
             task.status = settings.FAILED
             task.save()
-            message, status_code = _("Success"), 200
 
-        notify_task_status(task)
-        return JsonResponse({"Message": message}, status=status_code)
-
+            notify_task_status(task)
+            # You successfully logged the failure, so return a 200 OK.
+            # The client's request was valid, even if the job failed.
+            return JsonResponse({"Message": "Failure logged successfully"}, status=200)
+        
+        else:
+            return JsonResponse({"Message": _("Invalid payload: Missing 'markdown_content' or 'error_message'")}, status=400)
+        
     except Exception as e:
-        # Optionally notify via Django Channels here
+        # If an unexpected error happens, try to fail the task so you know about it.
+        if 'task' in locals() and task:
+            task.status = settings.FAILED
+            task.error_message = f"Unexpected callback processing error: {str(e)}"
+            task.save()
+            notify_task_status(task)
+        
         return JsonResponse({"Message": str(e)}, status=500)
-
-
-
-# @swagger_auto_schema(**schemas['LLM_CALLBACK_SCHEMA']['POST'])
-# @api_view(['POST'])
-# @csrf_exempt
-# @require_POST
-# def llm_callback(request):
-#     try:
-#         data = json.loads(request.body)
-#         task_id = data.get("task_id")
-#         markdown = data.get("markdown_content")
-
-#         if not task_id or not markdown:
-#             return JsonResponse({"Message": _("Missing task_id or markdown_content")}, status=400)
-
-#         try:
-#             task = QAGenerationTask.objects.select_related('topic__user').get(id=task_id)
-#         except QAGenerationTask.DoesNotExist:
-#             return JsonResponse({"Message": _("Task not found")}, status=404)
-        
-#         # ✅ Only allow callback if task is in PROCESSING
-#         # This should not happen in normal flow, since LLM-service removes task-ids after processing
-#         if task.status != settings.PROCESSING:
-#             return JsonResponse({"Message": _("Task is not in PROCESSING state.")}, status=409)
-        
-#         try:
-#             task.result_file.save("dummy.md", ContentFile(markdown))
-#             task.status = settings.SUCCESS
-#             task.save()
-#             message, status_code = _("Success"), 200
-
-#         except Exception as e:
-#             error_msg = f"Failed to save markdown file: {str(e)}"
-#             task.error_message = error_msg
-#             task.status = settings.FAILED
-#             task.save()
-#             message, status_code = str(e), 500
-
-#         notify_task_status(task)
-#         return JsonResponse({"Message": message}, status=status_code)
-
-#     except Exception as e:
-#         # Optionally notify via Django Channels here
-#         return JsonResponse({"Message": str(e)}, status=500)
-
-
