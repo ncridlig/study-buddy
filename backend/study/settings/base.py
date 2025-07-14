@@ -14,6 +14,9 @@ SECRET_KEY = config('SECRET_KEY')
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="").split()
 ON_CLOUD = config('ON_CLOUD', default=False, cast=bool)
 
+if ON_CLOUD:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 
 # Application definition
 
