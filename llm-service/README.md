@@ -1,12 +1,9 @@
-This needs store user credentials and authenticate.
-Then on a user by user basis, there needs to be storage by topic, and then pdf's which have been uploaded.
-Also topics, need to have the image conversion storage, and finally the markdown output which is what is rendered by the frontend.
 
 ---
 
 This is the LLM-service for the study-buddy project.
 
-The main part is a celery worker which has study_friend, the inference LLM engine, built as a local package. Then there is an API which connects this service to the backend. Finally, there is redis store for persistence across different queries.
+The main part is a celery worker which has study_friend, the inference Visual Language Model engine, built as a local package. Then there is an API which connects this service to the backend. Finally, there is redis store for persistence across different queries. It uses topics, image conversion storage, and finally the markdown output which is what is rendered by the frontend.
 
 ---
 
@@ -69,6 +66,7 @@ docker ps -a
 ## 🌐 Accessing the Application
 
 - Swagger API Docs: http://localhost:8001/docs/
+- The primary API is /llm-callback.
 
 ---
 

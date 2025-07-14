@@ -3,106 +3,113 @@ options:
   # machineType: 'E2_HIGHCPU_8' # comment out to save money, but should decrease build time
 
 steps:
-# 0. Fetch backend secrets from Secret Manager and write to backend/.env
+# 0. Determine what changed by comparing to the previous commit on the main branch
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: 'detect-changes'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      # Fetch the latest changes from the main branch 
+      git fetch --deepen=10
+      # Detect unchanged components and write flags
+      if git diff --quiet HEAD^ HEAD -- backend; then
+        echo "SKIP_BACKEND=true" >> /workspace/flags.env
+      fi
+      if git diff --quiet HEAD^ HEAD -- frontend; then
+        echo "SKIP_FRONTEND=true" >> /workspace/flags.env
+      fi
+      if git diff --quiet HEAD^ HEAD -- llm-service; then
+        echo "SKIP_LLM=true" >> /workspace/flags.env
+      fi
+
+# 1. Fetch backend secrets from Secret Manager and write to backend/.env
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: 'fetch-backend-secrets'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
       gcloud secrets versions access 1 --secret="backend" > backend/.env
 
-# 1a. Build the Backend image
+# IF NECESSARY, FETCH FRONTEND SECRETS FOR CLOUD BUILD
+
+# 2. Conditional Backend build + push + tag
 - name: 'gcr.io/cloud-builders/docker'
+  id: 'build-backend'
+  entrypoint: 'bash'
   args:
-    - 'build'
-    - '--cache-from' # Use the latest image as cache source
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest'
-    - '-t'
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA'
-    - './backend' # The build context directory
-# 1b. Push the Backend image with commit and latest tags
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['tag', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest']
+    - '-c'
+    - |
+      source /workspace/flags.env || true
+      if [ "${SKIP_BACKEND:-false}" != "true" ]; then
+        echo "[build] Backend image"
+        docker build \
+          --cache-from=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest \
+          -t europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA \
+          ./backend
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA
+        docker tag europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA \
+                  europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest
+      else
+        echo "[skip] Backend image build (no backend changes)"
+      fi
 
-# 2a. Build the Frontend image
+# 3. Conditional Frontend build + push + tag
 - name: 'gcr.io/cloud-builders/docker'
+  id: 'build-frontend'
+  entrypoint: 'bash'
   args:
-    - 'build'
-    - '--cache-from' # Use the latest image as cache source
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest'
-    - '-t'
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA'
-    - './frontend' # The build context directory
-# 2b. Push the Frontend image with commit and latest tags
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['tag', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest']
+    - '-c'
+    - |
+      source /workspace/flags.env || true
+      if [ "${SKIP_FRONTEND:-false}" != "true" ]; then
+        echo "[build] Frontend image"
+        docker build \
+          --cache-from=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest \
+          -t europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA \
+          ./frontend
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA
+        docker tag europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA \
+                  europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest
+      else
+        echo "[skip] Frontend image build (no frontend changes)"
+      fi
 
-# 3a. Build and push the LLM-Service worker image
+# 4. LLM Worker + API build + push
 - name: 'gcr.io/cloud-builders/docker'
+  id: 'build-llm'
+  entrypoint: 'bash'
   args:
-    - 'build'
-    - '--cache-from' # Use the latest image as cache source
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest'
-    - '-t'
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA'
-    - '-f' # This flag specifies the Dockerfile to use
-    - 'llm-service/Dockerfile.cuda'
-    - './llm-service' # The build context directory
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA']
+    - '-c'
+    - |
+      source /workspace/flags.env || true
+      if [ "${SKIP_LLM:-false}" != "true" ]; then
+        echo "[build] LLM worker image"
+        # Build llm-worker
+        docker build \
+          --cache-from=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest \
+          -t europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA \
+          -f llm-service/Dockerfile.cuda \
+          ./llm-service
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA
+        docker tag europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA \
+                  europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest
 
-# 3b. Build and push the LLM-Service api image
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-    - 'build'
-    - '--cache-from' # Use the latest image as cache source
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest'
-    - '-t'
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA'
-    - '-f' # This flag specifies the Dockerfile to use
-    - 'llm-service/Dockerfile'
-    - './llm-service' # The build context directory
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA']
-
-# 4a. Tag the 3a image as 'latest' and push them for automatic deployment
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['tag', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest']
-
-# 4b. Tag the 3b image as 'latest' and push it for automatic deployment
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['tag', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest']
-
-# # 4. Trigger Cloud Deploy pipeline (commented out since we are switching to Terraform)
-# - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-#   entrypoint: 'gcloud'
-#   args:
-#     - 'deploy'
-#     - 'releases'
-#     - 'create'
-#     - 'release-$SHORT_SHA'
-#     - '--delivery-pipeline=study-buddy-pipeline'
-#     - '--region=europe-west1'
-#     - '--images=backend=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA,frontend=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA,llm-service=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-service:$COMMIT_SHA'
-
-images:
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA'
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest'
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA'
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest'
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:$COMMIT_SHA'
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest'
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA'
-- 'europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest'
+        echo "[build] LLM API image"
+        # Build llm-api
+        docker build \
+          --cache-from=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest \
+          -t europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA \
+          -f llm-service/Dockerfile \
+          ./llm-service
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA
+        docker tag europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:$COMMIT_SHA \
+                  europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest
+      else
+        echo "[skip] LLM images build (no llm-service changes)"
+      fi
