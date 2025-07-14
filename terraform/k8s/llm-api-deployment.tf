@@ -51,7 +51,7 @@ resource "kubernetes_deployment_v1" "llm-api" {
 
                     resources {
                         requests = {
-                            cpu    = "100m"
+                            cpu    = "50m"
                             memory = "128Mi"
                         }
 
@@ -67,7 +67,7 @@ resource "kubernetes_deployment_v1" "llm-api" {
                             port = 8000
                         }
                         initial_delay_seconds = 10
-                        period_seconds        = 10
+                        period_seconds        = 100
                         timeout_seconds       = 3
                         failure_threshold     = 3
                         success_threshold     = 1
@@ -107,7 +107,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "llm-api_hpa" {
 
     spec {
         min_replicas = 1
-        max_replicas = 10
+        max_replicas = 5
 
         scale_target_ref {
             api_version = "apps/v1"
@@ -120,18 +120,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "llm-api_hpa" {
                 name = "cpu"
                 target {
                     type               = "Utilization"
-                    average_utilization = 60
-                }
-            }
-        }
-
-        metric {
-            type = "Resource"
-            resource {
-                name = "memory"
-                target {
-                    type               = "Utilization"
-                    average_utilization = 70
+                    average_utilization = 80
                 }
             }
         }
