@@ -1,7 +1,7 @@
-resource "google_project_iam_member" "storage_access_sa_storage_viewer" {
-    project = var.gcp_project_id
-    role    = "roles/storage.objectViewer"
-    member  = "serviceAccount:${data.terraform_remote_state.gke.outputs.storage-sa-email}"
+resource "google_project_iam_member" "storage_access_sa_object_admin" {
+  project = var.gcp_project_id
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${data.terraform_remote_state.gke.outputs.storage-sa-email}"
 }
 
 resource "google_service_account_iam_member" "allow_impersonation" {

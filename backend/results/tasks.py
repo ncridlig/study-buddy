@@ -1,3 +1,4 @@
+import os
 from celery import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -21,9 +22,22 @@ def send_to_llm_service(task_id):
     topic = task.topic
     files = UploadedFile.objects.filter(topic=topic).order_by('order')
 
+    # --- START: THE FIX IS HERE --- (this is Gemini -Nicolas )
+
+    # Define the absolute path of the mount point inside the container.
+    # It's best practice to define this in settings.py if it's used elsewhere.
+    SHARED_VOLUME_MOUNT_POINT = "/media-volume"
+
+    # Use f.file.name to get the relative path within the bucket.
+    # Then, join it with the mount point to create an absolute path
+    # that the llm-worker can use directly.
+    file_refs = [os.path.join(SHARED_VOLUME_MOUNT_POINT, f.file.name) for f in files]
+
+    # --- END: THE FIX ---
+
     # Get file paths or URLs (depends on GCS/local) 
     # There need to be a mechanism with attention to a env variable to switch between local and GCS
-    file_refs = [f.file.url for f in files]  # adjust if using signed GCS URLs
+    # file_refs = [f.file.url for f in files]  # adjust if using signed GCS URLs
 
     payload = {
         "task_id": task.id,
