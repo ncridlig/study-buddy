@@ -7,7 +7,7 @@ def not_found_error():
     return {"404": openapi.Response(description="Resource not found")}
 
 
-
+app_tag = 'Accounts'
 schemas = {
     'RegisterAPIViewSchema': {
         'POST': dict(
@@ -22,6 +22,7 @@ schemas = {
             - **password**
             - **confirm_password**
             """,
+            tags=[app_tag],
             responses={
                 "201": openapi.Response(
                     description="User registered successfully",
@@ -41,6 +42,7 @@ schemas = {
         'GET': dict(
             operation_summary="Get current user",
             operation_description="Return the authenticated user's information.",
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="User data retrieved",
@@ -66,6 +68,7 @@ schemas = {
                 - **email**
                 - **password**
                 """,
+            tags=[app_tag],
             responses={
                 200: openapi.Response(
                     description="Token pair returned",
@@ -84,6 +87,7 @@ schemas = {
             operation_description="""
                 Provide a valid refresh token to obtain a new access token.
                 """,
+            tags=[app_tag],
             responses={
                 200: openapi.Response(
                     description="New access token returned",

@@ -1,7 +1,7 @@
 from django.conf import settings
 from drf_yasg import openapi
 
-
+app_tag = 'Results'
 schemas = {
     'LLM_CALLBACK_SCHEMA': {
         'POST': dict(
@@ -16,6 +16,7 @@ schemas = {
 
             ⚠️ This endpoint is internal and not intended for external use.
             """,
+            tags=[app_tag],
             request_body=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 required=['task_id', 'markdown_content'],
@@ -53,6 +54,7 @@ schemas = {
                 - In case of **SUCCESS** or **FAILED**, you can retrive the details of each task from related endpoint
                 - The **status** of the tasks is being broadcasted via WebSocket, so you can listen to the changes in real-time
                 """,
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="Successfully passed the task to the LLM service",
@@ -71,6 +73,7 @@ schemas = {
         'LIST': dict(
             operation_summary="List QA Generation Tasks",
             operation_description="Returns all Q&A generation tasks for the authenticated user.",
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="Successfully retrieved the Q&A tasks.",
@@ -96,6 +99,7 @@ schemas = {
         'RETRIEVE': dict(
             operation_summary="Retrieve a QA Generation Task",
             operation_description="Returns the Q&A generation task for the authenticated user.",
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="Successfully retrieved the Q&A task.",

@@ -7,6 +7,7 @@ def not_found_error():
     return {"404": openapi.Response(description="Resource not found")}
 
 
+app_tag = 'Topics'
 schemas = {
     'TopicViewSetSchema' : {
         'CREATE' : dict(
@@ -20,6 +21,7 @@ schemas = {
             Topic validation:
             - Topics of each user should have a unique title.
             """,
+            tags=[app_tag],
             responses={
                 "201": openapi.Response(
                     description="Topic created",
@@ -37,6 +39,7 @@ schemas = {
         'LIST' : dict(
             operation_summary="List all of the existing topics",
             operation_description='List all of the existing topics for the authenticated user',
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="All topics retrieved",
@@ -61,6 +64,7 @@ schemas = {
         'RETRIEVE' : dict(
             operation_summary="Retrieve one topic",
             operation_description='Retrieve the details of a topic with its id',
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="Topic retrieved",
@@ -87,6 +91,7 @@ schemas = {
             - Uniquness of titles should not be violated.
             - If none of the above fields are provided, no changes will be made.
             """,
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="Topic updated",
@@ -106,6 +111,7 @@ schemas = {
             operation_description="""
             Delete (Archive) a topic with its id
             """,
+            tags=[app_tag],
             responses={
                 "204": openapi.Response(
                     description="Topic Deleted(Archived)",
@@ -130,6 +136,7 @@ schemas = {
                 - Max file size is limited by `settings.ALLOWED_FILE_SIZE`.
                 - Each topic can accept up to `settings.ALLOWED_NUMBER_OF_FILES`.
                 """,
+            tags=[app_tag],
             manual_parameters=[
                 openapi.Parameter(
                     name='file',
@@ -165,6 +172,7 @@ schemas = {
         'LIST': dict(
             operation_summary="List all files in a topic",
             operation_description="Returns all files belonging to the authenticated user's topic (given by URL)",
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="List of files",
@@ -192,6 +200,7 @@ schemas = {
         'RETRIEVE': dict(
             operation_summary="Retrieve a single file",
             operation_description="Get a single uploaded file's details, including filename and order",
+            tags=[app_tag],
             responses={
                 "200": openapi.Response(
                     description="File retrieved",
@@ -218,6 +227,7 @@ schemas = {
 
                 At least one of the above must be provided, otherwise there will be no change.
                 """,
+            tags=[app_tag],
             manual_parameters=[
                 openapi.Parameter(
                     name='file',
@@ -254,6 +264,7 @@ schemas = {
         'DELETE': dict(
             operation_summary="Delete a file instance",
             operation_description="Delete the file record and remove the actual file from storage",
+            tags=[app_tag],
             responses={
                 "204": openapi.Response(description="File deleted"),
                 **auth_error(),

@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
+from study.health import health_check
 
 admin.site.index_title = _('ADMIN')
 admin.site.site_header = _('Relaiable System Project Admin Panel')
@@ -24,9 +24,9 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('account/', include('accounts.urls', namespace='accounts')),
-    path('topic/', include('topics.urls', namespace='topics')),
-    path('result/', include('results.urls', namespace='results')),
+    path('api/account/', include('accounts.urls', namespace='accounts')),
+    path('api/topic/', include('topics.urls', namespace='topics')),
+    path('api/result/', include('results.urls', namespace='results')),
 ]
 
 
@@ -35,6 +35,7 @@ urlpatterns += [
     path('swagger.json/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path("healthz", health_check, name="health_check"),
 ]
 
 
