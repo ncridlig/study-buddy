@@ -76,7 +76,9 @@ def llm_callback(request):
             markdown = data["markdown_content"]
 
             with transaction.atomic():
-                task.result_file.save(f"task_{task.id}_question-answer.md", ContentFile(markdown))
+                # Encode the string to bytes to satisfy the storage backend
+                file_content = ContentFile(markdown.encode('utf-8'))
+                task.result_file.save(f"task_{task.id}_question-answer.md", file_content)
                 task.status = settings.SUCCESS
                 task.error_message = ""
                 task.save()
