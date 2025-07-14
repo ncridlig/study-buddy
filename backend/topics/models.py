@@ -15,6 +15,7 @@ class Topic(models.Model):
             )
     title = models.CharField(max_length=100, verbose_name=_('Title'))
     description = models.TextField(verbose_name=_('Description'), blank=True)
+    archived = models.BooleanField(default=False, verbose_name=_('Archived'))
 
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     updated = models.DateTimeField(auto_now=True, verbose_name=_('Updated'))
@@ -25,6 +26,13 @@ class Topic(models.Model):
         ordering = ('created',)
         constraints = [
             models.UniqueConstraint(fields=['user', 'title'], name='unique_user_topic_title')
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields = ['user', 'title'],
+                condition = models.Q(archived=False),
+                name = 'unique_user_topic_title_if_not_archived'
+            )
         ]
 
     def __str__(self):

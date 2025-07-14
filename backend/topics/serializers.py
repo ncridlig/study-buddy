@@ -18,7 +18,7 @@ class TopicSerializer(serializers.ModelSerializer):
         try:
             return super().create(validated_data)
         except IntegrityError as e:
-            if 'unique_user_topic_title' in str(e):
+            if 'unique_user_topic_title_if_not_archived' in str(e):
                 raise serializers.ValidationError({
                     "Error": "You already have a topic with this title."
                 })
