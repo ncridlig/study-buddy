@@ -10,17 +10,14 @@ steps:
   args:
     - '-c'
     - |
-      # Fetch the main branch to compare against
-      git fetch origin main
-
-      # Check for changes in backend, frontend, llm-service
-      if git diff --quiet origin/main HEAD -- backend; then
+      # Detect unchanged components and write flags
+      if git diff --quiet HEAD^ HEAD -- backend; then
         echo "SKIP_BACKEND=true" >> /workspace/flags.env
       fi
-      if git diff --quiet origin/main HEAD -- frontend; then
+      if git diff --quiet HEAD^ HEAD -- frontend; then
         echo "SKIP_FRONTEND=true" >> /workspace/flags.env
       fi
-      if git diff --quiet origin/main HEAD -- llm-service; then
+      if git diff --quiet HEAD^ HEAD -- llm-service; then
         echo "SKIP_LLM=true" >> /workspace/flags.env
       fi
 
