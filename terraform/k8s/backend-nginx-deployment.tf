@@ -65,6 +65,7 @@ resource "kubernetes_deployment_v1" "backend_nginx" {
     }
 }
 
+# FOR DEV (HTTP)
 resource "kubernetes_service_v1" "nginx" {
     metadata {
         name = "nginx"
@@ -77,6 +78,27 @@ resource "kubernetes_service_v1" "nginx" {
 
         type             = "LoadBalancer"
         load_balancer_ip = "35.195.39.220"
+
+        port {
+            protocol    = "TCP"
+            port        = 80
+            target_port = 8080
+        }
+    }
+}
+
+# FOR PROD (HTTPS)
+resource "kubernetes_service_v1" "nginx_internal" {
+    metadata {
+        name = "nginx-internal"
+    }
+
+    spec {
+        selector = {
+            app = "backend-nginx"
+        }
+
+        type             = "NodePort"
 
         port {
             protocol    = "TCP"

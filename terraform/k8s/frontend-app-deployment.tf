@@ -96,7 +96,7 @@ resource "kubernetes_deployment_v1" "frontend" {
   }
 }
 
-# Resource: Kubernetes Service for the Frontend
+# FOR DEV
 # This exposes your frontend application to the internet via a GCP Load Balancer.
 resource "kubernetes_service_v1" "frontend" {
   metadata {
@@ -117,6 +117,27 @@ resource "kubernetes_service_v1" "frontend" {
     # Type "LoadBalancer" tells GCP to create an external load balancer
     # with a public IP address to route traffic to your pods.
     type = "LoadBalancer"
+  }
+}
+
+# FOR PROD
+resource "kubernetes_service_v1" "frontend_internal" {
+  metadata {
+    name = "frontend-internal"
+  }
+
+  spec {
+    selector = {
+      app = "frontend"
+    }
+
+    port {
+      protocol    = "TCP"
+      port        = 80 
+      target_port = 3000 
+    }
+
+    type = "NodePort"
   }
 }
 
