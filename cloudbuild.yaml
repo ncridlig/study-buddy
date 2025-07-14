@@ -3,29 +3,16 @@ options:
   # machineType: 'E2_HIGHCPU_8' # comment out to save money, but should decrease build time
 
 steps:
-# 0. Determine what changed by comparing to the previous commit on the main branch
+# 0. Manually set which components to skip
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  id: 'detect-changes'
+  id: 'write-flags'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
-      # Fetch the latest changes from the main branch 
-      git fetch --deepen=20
-
-      # Get the merge base between current HEAD and main
-      BASE=$$(git merge-base HEAD origin/main)
-
-      # Detect unchanged components and write flags
-      if git diff --quiet "$$BASE" HEAD -- backend; then
-        echo "SKIP_BACKEND=true" >> /workspace/flags.env
-      fi
-      if git diff --quiet "$$BASE" HEAD -- frontend; then
-        echo "SKIP_FRONTEND=true" >> /workspace/flags.env
-      fi
-      if git diff --quiet "$$BASE" HEAD -- llm-service; then
-        echo "SKIP_LLM=true" >> /workspace/flags.env
-      fi
+      echo "SKIP_BACKEND=false"   >> /workspace/flags.env
+      echo "SKIP_FRONTEND=true" >> /workspace/flags.env
+      echo "SKIP_LLM=true"       >> /workspace/flags.env
 
 # 1. Fetch backend secrets from Secret Manager and write to backend/.env
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
