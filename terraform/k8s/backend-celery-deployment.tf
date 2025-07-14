@@ -20,6 +20,9 @@ resource "kubernetes_deployment_v1" "backend_celery" {
                 labels = {
                     app = "backend-celery"
                 }
+                annotations = {
+                    "gke-gcsfuse/volumes" = "true"
+                }
             }
 
             spec {
@@ -28,7 +31,7 @@ resource "kubernetes_deployment_v1" "backend_celery" {
 
                 container {
                     name  = "celery"
-                    image = "europe-west1-docker.pkg.dev/gruppo-11/microservice-docker-repo/backend:latest"
+                    image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend:latest"
                     # image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/backend:latest"
 
                     command = ["/bin/sh", "-c"]
@@ -54,6 +57,24 @@ resource "kubernetes_deployment_v1" "backend_celery" {
                             memory = "1Gi"
                         }
                     }
+                    # Mount the volume inside the container
+                    volume_mount {
+                        name       = "gcsfuse-static-volume"
+                        mount_path = "/app/staticfiles"
+                        read_only  = true
+                    }
+                }
+                # Define the CSI volume for GCS Fuse
+                volume {
+                name = "gcsfuse-static-volume"
+
+                csi {
+                    driver = "gcsfuse.csi.storage.gke.io"
+                    volume_attributes = {
+                    bucketName   = "static-volume"
+                    mountOptions = "implicit-dirs"
+                    }
+                }
                 }
             }
         }

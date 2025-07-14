@@ -27,8 +27,12 @@ resource "kubernetes_deployment_v1" "llm-worker" {
 
             spec {
                 # The only service to use the non default GPU node pool
-                node_selector = {
-                    accelerator = "gpu"
+
+                toleration {
+                    key = "accelerator"
+                    operator = "Equal"
+                    value = "gpu"
+                    effect = "NoSchedule"
                 }
 
                 # This is where read permission to buckets is assigned to this pod
@@ -59,13 +63,13 @@ resource "kubernetes_deployment_v1" "llm-worker" {
                             "nvidia.com/gpu" = 1
                         }
                         limits = {
-                            cpu    = "1"
-                            memory = "4Gi"
+                            cpu    = "3"
+                            memory = "12Gi"
                             "nvidia.com/gpu" = 1
                         }
                     }
 
-                    # Mount the volume inside the container at /data
+                    # Mount the volume inside the container
                     volume_mount {
                         name       = "gcsfuse-volume"
                         mount_path = "/media-volume"
@@ -121,7 +125,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "llm-worker_hpa" {
 
     spec {
         min_replicas = 1
-        max_replicas = 10
+        max_replicas = 3
 
         scale_target_ref {
             api_version = "apps/v1"

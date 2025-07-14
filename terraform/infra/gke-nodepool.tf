@@ -22,12 +22,12 @@ resource "google_container_node_pool" "nodepool_1" {
 }
 
 resource "google_container_node_pool" "gpu_pool" {
-  name       = "${local.name}gpu-pool"
+  name       = "${local.name}-gpu-pool"
   location   = var.gcp_region
   cluster    = google_container_cluster.gke_cluster.name
 
   node_config {
-    machine_type = "n1-standard-4" # -2 might be too small, -8 works but costs more, try -4 next
+    machine_type = var.gpu_machine_type # "n1-standard-4"
     guest_accelerator {
       type  = "nvidia-tesla-t4" # cheapest GPU
       count = 1
@@ -38,8 +38,17 @@ resource "google_container_node_pool" "gpu_pool" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
+    taint {
+    key    = "accelerator"
+    value  = "gpu"
+    effect = "NO_SCHEDULE"
+    }
   }
 
   initial_node_count = 1
-  # Add other settings as needed (taints, preemptible, etc.)
+  autoscaling {
+        min_node_count = 1
+        max_node_count = 10
+        location_policy = "ANY"  
+    }
 }

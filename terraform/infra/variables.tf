@@ -14,6 +14,12 @@ variable "machine_type" {
   type = string
 }
 
+# GCP Compute Engine Machine Type
+variable "gpu_machine_type" {
+  description = "Compute Engine GPU Machine Type"
+  type = string
+}
+
 # variable "db_instance_name" {
 #   description = "db instance name"
 #   type        = string

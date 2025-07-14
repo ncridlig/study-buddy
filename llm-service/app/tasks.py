@@ -132,6 +132,7 @@ def process_qas_task(self, file_addresses: list[str], task_id: str, **kwargs):
     try:
         response = requests.post(settings.BACKEND_URL, json=json_payload)
         response.raise_for_status()
+        print(f"Response from backend for task {task_id}: {response.text} with status code {response.status_code}")
         logger.info(f"Response from backend for task {task_id}: {response.text} with status code {response.status_code}")
         if response.status_code in settings.VALID_RESPONSE_CODES:
             redis_client.delete_key(task_id)

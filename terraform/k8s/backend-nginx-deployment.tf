@@ -80,7 +80,7 @@ resource "kubernetes_service_v1" "nginx" {
 
         port {
             protocol    = "TCP"
-            port        = 8080
+            port        = 80
             target_port = 8080
         }
     }
@@ -108,7 +108,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "nginx_hpa" {
                 name = "cpu"
                 target {
                     type                = "Utilization"
-                    average_utilization = 50
+                    average_utilization = 70
                 }
             }
         }
