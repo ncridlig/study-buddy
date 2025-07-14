@@ -75,7 +75,7 @@ resource "kubernetes_deployment_v1" "frontend" {
           # to ensure traffic is only sent to healthy pods.
           readiness_probe {
             http_get {
-              path = "/" # Your app's root path or a specific health check endpoint
+              path = "/" 
               port = 3000
             }
             initial_delay_seconds = 5

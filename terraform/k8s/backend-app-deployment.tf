@@ -62,6 +62,31 @@ resource "kubernetes_deployment_v1" "backend" {
                             memory = "2Gi"
                         }
                     }
+                    
+                    liveness_probe {
+                        http_get {
+                            path = "/healthz"
+                            port = 8000
+                        }
+                        initial_delay_seconds = 10
+                        period_seconds        = 20
+                        timeout_seconds       = 2
+                        failure_threshold     = 3
+                        success_threshold     = 1
+                        }
+
+                        readiness_probe {
+                        http_get {
+                            path = "/healthz"
+                            port = 8000
+                        }
+                        initial_delay_seconds = 5
+                        period_seconds        = 10
+                        timeout_seconds       = 2
+                        failure_threshold     = 3
+                        success_threshold     = 1
+                        }
+
                     # Mount the volumes inside the container
                     volume_mount {
                         name       = "gcsfuse-media-volume"
