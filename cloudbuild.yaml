@@ -34,32 +34,36 @@ steps:
 
 # 2. Conditional Backend build + push + tag
 - name: 'gcr.io/cloud-builders/docker'
+  id: 'build-backend'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
       source /workspace/flags.env || true
-      if [ "$SKIP_BACKEND" != "true" ]; then
+      if [ "${SKIP_BACKEND:-false}" != "true" ]; then
+        echo "[build] Backend image"
         docker build \
           --cache-from=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest \
           -t europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA \
-          ./backend 
+          ./backend
         docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA
         docker tag europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:$COMMIT_SHA \
                   europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest
         docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/backend:latest
-        else
-        echo "[skip] Backend image build (no backend changes in git diff)"
+      else
+        echo "[skip] Backend image build (no backend changes)"
       fi
 
 # 3. Conditional Frontend build + push + tag
 - name: 'gcr.io/cloud-builders/docker'
+  id: 'build-frontend'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
       source /workspace/flags.env || true
-      if [ "$SKIP_FRONTEND" != "true" ]; then
+      if [ "${SKIP_FRONTEND:-false}" != "true" ]; then
+        echo "[build] Frontend image"
         docker build \
           --cache-from=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest \
           -t europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:$COMMIT_SHA \
@@ -69,17 +73,19 @@ steps:
                   europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest
         docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/frontend:latest
       else
-        echo "[skip] Frontend image build (no frontend changes in git diff)"
+        echo "[skip] Frontend image build (no frontend changes)"
       fi
 
 # 4. LLM Worker + API build + push
 - name: 'gcr.io/cloud-builders/docker'
+  id: 'build-llm'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
       source /workspace/flags.env || true
-      if [ "$SKIP_LLM" != "true" ]; then
+      if [ "${SKIP_LLM:-false}" != "true" ]; then
+        echo "[build] LLM worker image"
         # Build llm-worker
         docker build \
           --cache-from=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest \
@@ -91,6 +97,7 @@ steps:
                   europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest
         docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-worker:latest
 
+        echo "[build] LLM API image"
         # Build llm-api
         docker build \
           --cache-from=europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest \
@@ -102,5 +109,5 @@ steps:
                   europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest
         docker push europe-west1-docker.pkg.dev/$PROJECT_ID/study-buddy-repo/llm-api:latest
       else
-        echo "[skip] LLM images build (no llm-service changes in git diff)"
+        echo "[skip] LLM images build (no llm-service changes)"
       fi
