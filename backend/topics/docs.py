@@ -101,6 +101,18 @@ schemas = {
                 **auth_error(),
             }
         ),
+        'DELETE' : dict(
+            operation_summary="Delete (Archive) an existing topic",
+            operation_description="""
+            Delete (Archive) a topic with its id
+            """,
+            responses={
+                "204": openapi.Response(
+                    description="Topic Deleted(Archived)",
+                ),
+                **auth_error(),
+            }
+        ),
     },
 
     'UploadedFileViewSetSchema': {

@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 from topics.models import Topic, UploadedFile
 from topics.serializers import TopicSerializer, UploadedFileSerializer
 from topics.docs import schemas
@@ -12,13 +13,13 @@ from drf_yasg.utils import swagger_auto_schema
 class TopicViewSet(ModelViewSet):
     serializer_class = TopicSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ['get', 'post', 'patch']
+    http_method_names = ['get', 'post', 'patch', 'delete']
     
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Topic.objects.none()  # Return empty queryset during schema generation
 
-        return Topic.objects.filter(user=self.request.user)
+        return Topic.objects.filter(user=self.request.user, archived=False)
     
     @swagger_auto_schema(**schemas['TopicViewSetSchema']['CREATE'])
     def create(self, request, *args, **kwargs):
@@ -35,6 +36,13 @@ class TopicViewSet(ModelViewSet):
     @swagger_auto_schema(**schemas['TopicViewSetSchema']['UPDATE'])
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
+    
+    @swagger_auto_schema(**schemas['TopicViewSetSchema']['DELETE'])
+    def destroy(self, request, *args, **kwargs):
+        topic = self.get_object()
+        topic.archived = True
+        topic.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UploadedFileViewSet(ModelViewSet):
