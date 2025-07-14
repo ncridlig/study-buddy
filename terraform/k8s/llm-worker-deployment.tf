@@ -59,7 +59,7 @@ resource "kubernetes_deployment_v1" "llm-worker" {
                     resources {
                         requests = {
                             cpu    = "0.5"
-                            memory = "2Gi"
+                            memory = "6Gi"
                             "nvidia.com/gpu" = 1
                         }
                         limits = {
