@@ -75,7 +75,7 @@ def llm_callback(request):
         if "markdown_content" in data:
             markdown = data["markdown_content"]
 
-            with transaction.atomic:
+            with transaction.atomic():
                 task.result_file.save(f"task_{task.id}_question-answer.md", ContentFile(markdown))
                 task.status = settings.SUCCESS
                 task.error_message = ""
@@ -87,12 +87,12 @@ def llm_callback(request):
         elif "error_message" in data:
             error_message = data["error_message"]
             
-            task.error_message = error_message
-            task.status = settings.FAILED
-            task.save()
+            with transaction.atomic():
+                task.error_message = error_message
+                task.status = settings.FAILED
+                task.save()
+                notify_task_status(task)
 
-            notify_task_status(task)
-            # You successfully logged the failure, so return a 200 OK.
             # The client's request was valid, even if the job failed.
             return JsonResponse({"Message": "Failure logged successfully"}, status=200)
         
