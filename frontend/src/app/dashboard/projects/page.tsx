@@ -7,16 +7,18 @@ import {
   CircularProgress,
   Button,
   Alert,
+  Grid,
+  Container, // Added for better spacing control
+  Fab,      // Added for the mobile action button
+  Stack,    // Added for the empty state
 } from '@mui/material';
-import { Grid } from '@mui/material';;
+import AddIcon from '@mui/icons-material/Add'; // Icon for the FAB
+import FolderOffIcon from '@mui/icons-material/FolderOff'; // Icon for the empty state
 import Cookies from 'js-cookie';
 
-// Import the components you have
-import ProjectCard from '@/components/ProjectCard'; // Your card component
-import CreateTopicModal from '@/components/CreateTopicModal'; // The modal from the previous step
-
-// Import the shared type definition
-import { Project } from '@/types'; 
+import ProjectCard from '@/components/ProjectCard';
+import CreateTopicModal from '@/components/CreateTopicModal';
+import { Project } from '@/types';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -57,55 +59,114 @@ export default function ProjectsPage() {
     fetchProjects();
   }, [API_BASE_URL, authToken]);
 
-  // This function is passed to the modal. 
-  // It runs after a new topic is successfully created.
+  // This function is passed to the modal.
   const handleTopicCreated = (createdTopic: Project) => {
     setProjects(prevProjects => [createdTopic, ...prevProjects]);
     setSuccessMessage(`Successfully created topic: "${createdTopic.title}"`);
-    // Hide the success message after 5 seconds
     setTimeout(() => setSuccessMessage(null), 5000);
   };
 
+  // Centered full-page loader
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}><CircularProgress /></Box>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
-
+  
+  // Centered full-page error
   if (error) {
-    return <Typography color="error" sx={{ p: 7 }}>Error fetching projects: {error}</Typography>;
+    return (
+      <Container maxWidth="sm">
+          <Alert severity="error" sx={{ mt: 4 }}>
+              <Typography>Error fetching projects: {error}</Typography>
+          </Alert>
+      </Container>
+    );
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3, md: 5 }, mt: 5 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" component="h1">
-          Your Projects
-        </Typography>
-        <Button variant="contained" color="primary" onClick={() => setIsModalOpen(true)}>
-          Create New Topic
-        </Button>
+    <>
+      <Box sx={{ py: { xs: 3, md: 4 }, mt: 5, pt: 5 }}>
+        <Container maxWidth="lg">
+          {/* Responsive Header */}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
+            spacing={2}
+            mb={4}
+          >
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+              Your Projects
+            </Typography>
+            {/* Button is hidden on mobile, replaced by FAB */}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setIsModalOpen(true)}
+              startIcon={<AddIcon />}
+              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+            >
+              Create New Topic
+            </Button>
+          </Stack>
+
+          {successMessage && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMessage(null)}>{successMessage}</Alert>}
+
+          <Grid container spacing={{ xs: 2, md: 3 }}>
+            {projects.length > 0 ? (
+              projects.map((project) => (
+                // ✅ CORRECTED Grid item syntax for responsiveness
+                <Grid size={{ xs: 12, md: 4, sm: 6 }}  key={project.id}>
+                  <ProjectCard project={project} />
+                </Grid>
+              ))
+            ) : (
+              // Enhanced Empty State
+              <Grid size={{xs: 12}}>
+                <Stack
+                  alignItems="center"
+                  justifyContent="center"
+                  sx={{
+                    border: '2px dashed',
+                    borderColor: 'divider',
+                    borderRadius: 2,
+                    py: 8,
+                    mt: 2
+                  }}
+                >
+                  <FolderOffIcon sx={{ fontSize: 50, color: 'text.secondary', mb: 2 }} />
+                  <Typography variant="h6" color="text.secondary">
+                    No projects found
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Click &rsquo;Create New Topic&rsquo; to get started
+                  </Typography>
+                </Stack>
+              </Grid>
+            )}
+          </Grid>
+        </Container>
       </Box>
 
-      {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+      {/* Floating Action Button for Mobile */}
+      <Fab
+        color="primary"
+        aria-label="add"
+        onClick={() => setIsModalOpen(true)}
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          display: { xs: 'flex', sm: 'none' }, // Only show on mobile
+        }}
+      >
+        <AddIcon />
+      </Fab>
 
-      <Grid container spacing={3}>
-        {projects.length > 0 ? (
-          projects.map((project) => (
-            // The Grid item provides spacing and responsive layout for each card
-            <Grid size={{ xs: 12, md: 4, sm: 6 }} key={project.id}>
-            {/* <Grid item  size={{xs={12} sm={6} md={4}}} > */}
-              <ProjectCard project={project} />
-            </Grid>
-          ))
-        ) : (
-          <Grid size={{xs: 12}}>
-            <Typography sx={{ p: 2, m: 2 }}>
-              No projects found. Click `Create New Topic`` to get started.
-            </Typography>
-          </Grid>
-        )}
-      </Grid>
-      
-      {/* The modal component is rendered here but is only visible when isModalOpen is true */}
+      {/* The modal component remains unchanged */}
       <CreateTopicModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -113,6 +174,6 @@ export default function ProjectsPage() {
         apiBaseUrl={API_BASE_URL}
         authToken={authToken}
       />
-    </Box>
+    </>
   );
 }

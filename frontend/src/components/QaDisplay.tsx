@@ -1,5 +1,17 @@
-import { Box, Typography, Button, CircularProgress } from '@mui/material';
-import QuestionCard from './QuestionCard';
+// src/components/QaDisplay.tsx
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Typography,
+  Stack,
+} from '@mui/material';
+import { ExpandMore, AutoAwesome } from '@mui/icons-material';
 import { Question } from '@/types';
 
 interface QaDisplayProps {
@@ -7,48 +19,67 @@ interface QaDisplayProps {
   onGenerate: () => void;
   isLoading: boolean;
   isGenerating: boolean;
+  fileCount: number;
 }
 
-export default function QaDisplay({ questions, onGenerate, isLoading, isGenerating }: QaDisplayProps) {
+const QaDisplay = ({ questions, onGenerate, isLoading, isGenerating, fileCount }: QaDisplayProps) => {
   return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        p: 3,
-        height: '100%',
-      }}
-    >
-      {/* Scrollable Q&A list */}
-      <Box sx={{ overflowY: 'auto', flexGrow: 1, mb: 2 }}>
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Generated Questions
-        </Typography>
+    <Stack spacing={3}>
+      <Card variant="outlined">
+        <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', gap: 2 }}>
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" component="h2">
+              Generated Q&A
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Generate questions and answers based on your uploaded documents.
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={isGenerating ? <CircularProgress size={20} color="inherit" /> : <AutoAwesome />}
+            onClick={onGenerate}
+            disabled={isGenerating || fileCount === 0}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            {isGenerating ? 'Generating...' : 'Generate Q&A'}
+          </Button>
+        </CardContent>
+      </Card>
 
-        {questions.length === 0 ? (
-          <Typography variant="body1" color="text.secondary">
-            No questions yet. Upload a PDF and click `Generate` below.
-          </Typography>
-        ) : (
-          questions.map((qa) => <QuestionCard key={qa.id} question={qa} />)
-        )}
-      </Box>
-
-      {/* Sticky bottom button */}
-      <Box sx={{ textAlign: 'center', py: 2, borderTop: '1px solid #eee' }}>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={onGenerate}
-          disabled={isGenerating || isLoading} // Disable while generating
-          startIcon={isGenerating ? <CircularProgress size={24} color="inherit" /> : null}
-          sx={{ textTransform: 'none', minWidth: '200px' }}
-        >
-          {isGenerating ? 'Generating...' : 'Generate Questions'}
-        </Button>
-      </Box>
-    </Box>
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+          <CircularProgress />
+        </Box>
+      ) : questions.length > 0 ? (
+        <Box>
+          {questions.map((q, index) => (
+            <Accordion key={q.id} defaultExpanded={index === 0}>
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Typography sx={{ fontWeight: 'bold' }}>{q.q}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography color="text.secondary">{q.a}</Typography>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </Box>
+      ) : (
+        <Card variant="outlined" sx={{ textAlign: 'center', p: { xs: 3, sm: 5 } }}>
+            <AutoAwesome sx={{ fontSize: 50, color: 'grey.400', mb: 2 }} />
+            <Typography variant="h6" gutterBottom>
+              Ready to generate questions?
+            </Typography>
+            <Typography color="text.secondary">
+              {fileCount > 0
+                ? 'Click the "Generate Q&A" button to create questions and answers.'
+                : 'Upload at least one document first, then you can generate your Q&A.'}
+            </Typography>
+        </Card>
+      )}
+    </Stack>
   );
-}
+};
+
+export default QaDisplay;

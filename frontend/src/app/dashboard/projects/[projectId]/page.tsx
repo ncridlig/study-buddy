@@ -2,14 +2,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Box } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { AlertColor } from '@mui/material/Alert';
 import Cookies from 'js-cookie';
 import { PdfFile, Question } from '@/types';
 import { use } from 'react';
 
 // Import all the necessary child components
-import PdfSidebar from '@/components/PdfSidebar';
+import PdfManager from '@/components/PdfManager'; // Renamed for clarity
 import QaDisplay from '@/components/QaDisplay';
 import FeedbackAlert from '@/components/FeedbackAlert';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
@@ -121,8 +121,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
 
-  // **FIX**: Use the entire `params` object in the dependency array.
-  }, [params, API_BASE_URL, questions.length]);
+  }, [params, API_BASE_URL, questions.length, projectId]);
 
 
   // --- Action Handlers ---
@@ -214,7 +213,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
 
   // --- Render ---
   return (
-    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, height: 'calc(100vh - 64px)', mt: 5, pt: 5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 64px)', mt: 5, pt: 5 }}>
       <FeedbackAlert
         open={alertState.open}
         message={alertState.message}
@@ -228,7 +227,6 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         title="Delete File?"
         contentText="Are you sure you want to delete this file permanently? This action cannot be undone."
       />
-
       <input
         type="file"
         ref={fileInputRef}
@@ -237,20 +235,27 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         accept="application/pdf,.doc,.docx,.txt"
       />
 
-      <PdfSidebar
-        files={files}
-        onUpload={handleUploadClick}
-        onDelete={handleDeleteClick}
-        isLoading={loadingFiles}
-        isUploading={isUploading}
-      />
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px 1fr' }, gap: { xs: 3, md: 4 } }}>
+          {/* File Management Section */}
+          <PdfManager
+            files={files}
+            onUpload={handleUploadClick}
+            onDelete={handleDeleteClick}
+            isLoading={loadingFiles}
+            isUploading={isUploading}
+          />
 
-      <QaDisplay
-        questions={questions}
-        onGenerate={handleGenerateQuestions}
-        isLoading={loadingQuestions}
-        isGenerating={isGenerating}
-      />
+          {/* Q&A Display Section */}
+          <QaDisplay
+            questions={questions}
+            onGenerate={handleGenerateQuestions}
+            isLoading={loadingQuestions}
+            isGenerating={isGenerating}
+            fileCount={files.length}
+          />
+        </Box>
+      </Container>
     </Box>
   );
 }
