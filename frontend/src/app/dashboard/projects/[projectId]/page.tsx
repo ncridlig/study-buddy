@@ -89,8 +89,8 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         if (!projectId) return;
         if (questions.length === 0) setLoadingQuestions(true);
         try {
-            const taskResponse = await fetch(`${API_BASE_URL}/result/qa/`, { headers: { 'Authorization': `Bearer ${authToken}` } });
-            if (!taskResponse.ok) throw new Error('Could not fetch QA tasks.');
+            const taskResponse = await fetch(`${API_BASE_URL}/result/qa/${projectId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+            if (!taskResponse.ok) throw new Error('No QA found.');
             const allTasks: QaGenerationTask[] = await taskResponse.json();
             const relevantTasks = allTasks.filter(task => task.topic === projectId && task.result_file);
             const allQuestions = await Promise.all(
