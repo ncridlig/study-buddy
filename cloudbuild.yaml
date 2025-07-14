@@ -14,16 +14,16 @@ steps:
       git fetch --deepen=20
 
       # Get the merge base between current HEAD and main
-      BASE=$(git merge-base HEAD origin/main)
+      BASE=$$(git merge-base HEAD origin/main)
 
       # Detect unchanged components and write flags
-      if git diff --quiet "$BASE" HEAD -- backend; then
+      if git diff --quiet "$$BASE" HEAD -- backend; then
         echo "SKIP_BACKEND=true" >> /workspace/flags.env
       fi
-      if git diff --quiet "$BASE" HEAD -- frontend; then
+      if git diff --quiet "$$BASE" HEAD -- frontend; then
         echo "SKIP_FRONTEND=true" >> /workspace/flags.env
       fi
-      if git diff --quiet "$BASE" HEAD -- llm-service; then
+      if git diff --quiet "$$BASE" HEAD -- llm-service; then
         echo "SKIP_LLM=true" >> /workspace/flags.env
       fi
 
