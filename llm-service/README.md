@@ -3,7 +3,7 @@
 
 This is the LLM-service for the study-buddy project.
 
-The main part is a celery worker which has study_friend, the inference LLM engine, built as a local package. Then there is an API which connects this service to the backend. Finally, there is redis store for persistence across different queries. It uses topics, image conversion storage, and finally the markdown output which is what is rendered by the frontend.
+The main part is a celery worker which has study_friend, the inference Visual Language Model engine, built as a local package. Then there is an API which connects this service to the backend. Finally, there is redis store for persistence across different queries. It uses topics, image conversion storage, and finally the markdown output which is what is rendered by the frontend.
 
 ---
 

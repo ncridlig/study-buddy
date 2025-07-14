@@ -10,6 +10,8 @@ steps:
   args:
     - '-c'
     - |
+      # Fetch the latest changes from the main branch 
+      git fetch --deepen=10
       # Detect unchanged components and write flags
       if git diff --quiet HEAD^ HEAD -- backend; then
         echo "SKIP_BACKEND=true" >> /workspace/flags.env
