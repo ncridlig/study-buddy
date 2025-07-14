@@ -22,7 +22,7 @@ def send_to_llm_service(task_id):
     topic = task.topic
     files = UploadedFile.objects.filter(topic=topic).order_by('order')
 
-    if settings.ON_clOUD:
+    if settings.ON_ClOUD:
         file_refs = [os.path.join(f'/{settings.GS_BUCKET_MEDIA_NAME}', f.file.name) for f in files]
     else:
         file_refs = [f.file.url for f in files]
