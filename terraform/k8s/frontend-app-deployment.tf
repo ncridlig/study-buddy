@@ -96,29 +96,29 @@ resource "kubernetes_deployment_v1" "frontend" {
   }
 }
 
-# FOR DEV
-# This exposes your frontend application to the internet via a GCP Load Balancer.
-resource "kubernetes_service_v1" "frontend" {
-  metadata {
-    name = "frontend"
-  }
+# # FOR DEV
+# # This exposes your frontend application to the internet via a GCP Load Balancer.
+# resource "kubernetes_service_v1" "frontend" {
+#   metadata {
+#     name = "frontend"
+#   }
 
-  spec {
-    selector = {
-      app = "frontend"
-    }
+#   spec {
+#     selector = {
+#       app = "frontend"
+#     }
 
-    port {
-      protocol    = "TCP"
-      port        = 80 # The standard HTTP port the world will connect to.
-      target_port = 3000 # The port on your container to forward traffic to.
-    }
+#     port {
+#       protocol    = "TCP"
+#       port        = 80 # The standard HTTP port the world will connect to.
+#       target_port = 3000 # The port on your container to forward traffic to.
+#     }
 
-    # Type "LoadBalancer" tells GCP to create an external load balancer
-    # with a public IP address to route traffic to your pods.
-    type = "LoadBalancer"
-  }
-}
+#     # Type "LoadBalancer" tells GCP to create an external load balancer
+#     # with a public IP address to route traffic to your pods.
+#     type = "LoadBalancer"
+#   }
+# }
 
 # FOR PROD
 resource "kubernetes_service_v1" "frontend_internal" {
@@ -137,7 +137,7 @@ resource "kubernetes_service_v1" "frontend_internal" {
       target_port = 3000 
     }
 
-    type = "NodePort"
+    type = "LoadBalancer"
   }
 }
 

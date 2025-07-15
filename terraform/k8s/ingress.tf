@@ -15,7 +15,7 @@ resource "kubernetes_manifest" "managed_cert" {
     }
     "spec" = {
       "domains" = [
-        "study-buddy.duckdns.org", # Fully qualified domain name
+        "study-buddy.duckdns.org", # Can add more than 1 domain
       ]
     }
   }
