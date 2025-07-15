@@ -27,6 +27,7 @@ jobs:
         run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
 
+      # Commented due to Rate Limiting
       # - name: Terraform Security Scan (tfsec)
       #   uses: aquasecurity/tfsec-action@v1.0.3
       #   with:
@@ -55,7 +56,8 @@ jobs:
 
       - name: Create .tfvars file
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: echo "${{ secrets.TF_VARS }}" > terraform.tfvars
+        run: |
+          echo "${{ secrets.TF_VARS }}" | tee terraform.tfvars > /dev/null
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
