@@ -89,8 +89,8 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         if (!projectId) return;
         if (questions.length === 0) setLoadingQuestions(true);
         try {
-            const taskResponse = await fetch(`${API_BASE_URL}/api/result/qa/${projectId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
-            
+            const taskResponse = await fetch(`${API_BASE_URL}/api/result/qa/${projectId}`, { headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json', } });
+            console.log("response", taskResponse)
             if (taskResponse.status === 404) { // No tasks found yet
                 setIsGenerating(false);
                 setQuestions([]);
@@ -144,13 +144,12 @@ export default function ProjectDetailPage({ params }: { params: any}) {
     // We keep the local `isGenerating` state for immediate feedback on the button
     setIsGenerating(true); 
     try {
-      // const authToken = Cookies.get('access_token');
-      const response = await fetch(`${API_BASE_URL}/api/result/qa/`, {
+      const authToken = Cookies.get('access_token');
+      const response = await fetch(`${API_BASE_URL}/api/result/qa/${projectId}/`, {
         method: 'POST',
         headers: {
-          'topic': projectId,
-          // 'Authorization': `Bearer ${authToken}`,
-          // 'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ topic: projectId }),
       });

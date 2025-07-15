@@ -90,10 +90,10 @@ export default function ProjectsPage() {
   // --- Deletion Logic ---
 
   // This function just opens the dialog
-  const handleDeleteTopic = (topicId: string) => {
-    setTopicToDelete(topicId);
-    setIsConfirmOpen(true);
-  };
+  // const handleDeleteTopic = (topicId: string) => {
+  //   setTopicToDelete(topicId);
+  //   setIsConfirmOpen(true);
+  // };
 
   // ✅ Delete handler with debouncing logic
   const handleConfirmDelete = async () => {
@@ -118,14 +118,14 @@ export default function ProjectsPage() {
     const topicTitle = projects.find(p => p.id === idBeingDeleted)?.title || 'the topic';
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/topic/topics/${idBeingDeleted}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/topic/topics/${idBeingDeleted}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${authToken}`,
         },
       });
 
-      if (response.status === 200) {
+      if (response.status === 204) {
         setProjects(prevProjects => prevProjects.filter(project => project.id !== idBeingDeleted));
         setSuccessMessage(`Successfully deleted topic: "${topicTitle}"`);
         setTimeout(() => setSuccessMessage(null), 5000);
@@ -197,7 +197,7 @@ export default function ProjectsPage() {
                 <Grid size={{xs:12, sm:6, md:4}} key={project.id}>
                   <ProjectCard 
                     project={project} 
-                    onDelete={handleDeleteTopic}
+                    // onDelete={handleDeleteTopic}
                   />
                 </Grid>
               ))
