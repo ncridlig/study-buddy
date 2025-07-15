@@ -29,10 +29,10 @@ interface QaDisplayProps {
 interface QaGenerationTask {
   id: number;
   topic: number;
-  name: string;
-  date: string;
+  name?: string;
+  date?: string;
   status: string;
-  result_file: string | null;
+  result_file?: string | null;
 }
 
 const parseQaMarkdown = (markdown: string): Question[] => {
@@ -84,6 +84,7 @@ const QaDisplay = ({ tasks, onGenerate, isLoading, isGenerating, fileCount, apiB
   // ✨ CHANGE: State to hold content and loading status for each accordion
   const [qaContent, setQaContent] = useState<Record<number, Question[]>>({});
   const [loadingState, setLoadingState] = useState<Record<number, boolean>>({});
+  const [inProgress, setInProgress] = useState<boolean>(false);
 
   // ✨ CHANGE: Handler to fetch data when an accordion expands
   const handleAccordionChange = async (taskId: number, topicId: number, isExpanded: boolean) => {
@@ -99,6 +100,9 @@ const QaDisplay = ({ tasks, onGenerate, isLoading, isGenerating, fileCount, apiB
           throw new Error('Failed to fetch Q&A content.');
         }
         const markdown = await response.json();
+        if(markdown.result_file==="Q&A generation in progress"){
+          setInProgress(true)
+        }
         const parsedQuestions = parseQaMarkdown(markdown.result_file_content);
         setQaContent(prev => ({ ...prev, [taskId]: parsedQuestions }));
       } catch (error) {
@@ -113,7 +117,6 @@ const QaDisplay = ({ tasks, onGenerate, isLoading, isGenerating, fileCount, apiB
 
   return (
     <Stack spacing={3}>
-      {/* ... Top Card (no changes) ... */}
       <Card variant="outlined">
          <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', gap: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
@@ -145,9 +148,9 @@ const QaDisplay = ({ tasks, onGenerate, isLoading, isGenerating, fileCount, apiB
               // ✨ CHANGE: Added onChange handler
               onChange={(event, isExpanded) => handleAccordionChange(task.id, task.topic, isExpanded)}
             >
-              <AccordionSummary expandIcon={<ExpandMore />}>
+              <AccordionSummary expandIcon={!inProgress&&<ExpandMore />}>
                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2 }}>
-                  <Typography sx={{ fontWeight: 'bold', flexGrow: 1 }}>{task.name}</Typography>
+                  <Typography sx={{ fontWeight: 'bold', flexGrow: 1 }}>{inProgress ? `Generating QAs`: `View QAs`}</Typography>
                   <Typography variant="body2" color="text.secondary">{task.date}</Typography>
                   <Box
                     component="div"
@@ -159,7 +162,7 @@ const QaDisplay = ({ tasks, onGenerate, isLoading, isGenerating, fileCount, apiB
                       window.open(task.result_file!, '_blank');
                     }}
                   >
-                    <Download fontSize="small" />
+                    {!inProgress && <Download fontSize="small" />}
                   </Box>
                 </Box>
               </AccordionSummary>
