@@ -15,6 +15,9 @@ class QAGenerationTaskCreateSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
 
         if instance.result_file:
+            date_str = instance.created.strftime("%d.%m.%Y").replace('.', '-')
+            topic_title = instance.topic.title.replace('.', '-').replace(' ', '-')
+            representation['name'] = f'{topic_title}_{date_str}.md'
             representation['result_file'] = instance.result_file.url
         else:
             representation['result_file'] = "Q&A generation in progress"

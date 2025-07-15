@@ -24,10 +24,10 @@ class QAGenerationTaskCreateAPIView(
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return QAGenerationTask.objects.none()
-        
+
         topic_id = self.kwargs.get('topic_id')
         return QAGenerationTask.objects.filter(topic__user=self.request.user, topic_id=topic_id)
-        
+
     serializer_class = QAGenerationTaskCreateSerializer
     permission_classes = [IsAuthenticated, ]
 
