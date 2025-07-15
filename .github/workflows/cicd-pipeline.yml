@@ -27,12 +27,6 @@ jobs:
         run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      # Commented due to Rate Limiting
-      # - name: Terraform Security Scan (tfsec)
-      #   uses: aquasecurity/tfsec-action@v1.0.3
-      #   with:
-      #     working_directory: ${{ env.TF_WORKING_DIR }}
-
   terraform-apply:
     name: Terraform Plan & Apply
     needs: [security-and-lint]
