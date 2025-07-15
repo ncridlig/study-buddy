@@ -6,12 +6,12 @@ resource "google_sql_database_instance" "main" {
     deletion_protection = false
 
     settings {
-        tier    = "db-f1-micro"
-        availability_type = "ZONAL"
+        # tier    = "db-f1-micro"
+        # availability_type = "ZONAL"
 
         #### HA(high availability) and replication ####
-        # tier    = "db-g1-small"   
-        # availability_type = "REGIONAL"
+        tier    = "db-g1-small"   
+        availability_type = "REGIONAL"
         ###############################################
 
         edition = "ENTERPRISE"
