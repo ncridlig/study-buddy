@@ -10,7 +10,7 @@ resource "kubernetes_manifest" "managed_cert" {
     "apiVersion" = "networking.gke.io/v1"
     "kind"       = "ManagedCertificate"
     "metadata" = {
-      "name" = "study-buddy-cert"
+      "name"      = "study-buddy-cert"
       "namespace" = "default"
     }
     "spec" = {
@@ -27,7 +27,7 @@ resource "kubernetes_manifest" "managed_cert" {
 # and attaches the SSL certificate.
 resource "kubernetes_ingress_v1" "ingress" {
   metadata {
-    name = "ingress"
+    name      = "ingress"
     namespace = "default"
     annotations = {
       # Use the GCE (Google Cloud) Ingress controller.
@@ -36,7 +36,7 @@ resource "kubernetes_ingress_v1" "ingress" {
       "kubernetes.io/ingress.global-static-ip-name" = google_compute_global_address.ingress_static_ip.name
       # Attach the managed certificate by name.
       "networking.gke.io/managed-certificates" = kubernetes_manifest.managed_cert.manifest.metadata.name
-      "ingress.kubernetes.io/ssl-redirect"          = "false"
+      "ingress.kubernetes.io/ssl-redirect"     = "false"
     }
   }
 
@@ -53,7 +53,7 @@ resource "kubernetes_ingress_v1" "ingress" {
     rule {
       http {
         path {
-          path = "/docs/"
+          path      = "/docs/"
           path_type = "Exact"
           backend {
             service {
@@ -66,7 +66,7 @@ resource "kubernetes_ingress_v1" "ingress" {
         }
 
         path {
-          path = "/docs"
+          path      = "/docs"
           path_type = "Exact"
           backend {
             service {
@@ -79,7 +79,7 @@ resource "kubernetes_ingress_v1" "ingress" {
         }
 
         path {
-          path = "/admin"
+          path      = "/admin"
           path_type = "Prefix"
           backend {
             service {
@@ -92,7 +92,7 @@ resource "kubernetes_ingress_v1" "ingress" {
         }
 
         path {
-          path = "/api/"
+          path      = "/api/"
           path_type = "Prefix"
           backend {
             service {
