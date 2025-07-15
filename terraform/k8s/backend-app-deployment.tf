@@ -156,6 +156,26 @@ resource "kubernetes_service_v1" "backend" {
     }
 }
 
+# FOR PROD
+resource "kubernetes_service_v1" "backend_internal" {
+  metadata {
+    name = "backend-internal"
+  }
+
+  spec {
+    selector = {
+      app = "backend"
+    }
+
+    port {
+      protocol    = "TCP"
+      port        = 80 
+      target_port = 8000 
+    }
+
+    type = "LoadBalancer"
+  }
+}
 
 # Resource: Horizontal Pod Autoscaler V2
 resource "kubernetes_horizontal_pod_autoscaler_v2" "backend_hpa" {

@@ -41,40 +41,35 @@ resource "kubernetes_ingress_v1" "ingress" {
   }
 
   spec {
+    default_backend {
+      service {
+        name = kubernetes_service_v1.frontend_internal.metadata[0].name
+        port {
+          number = 80
+        }
+      }
+    }
+
     rule {
       http {
         path {
-          path     = "/api/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = kubernetes_service_v1.nginx_internal.metadata[0].name
-              port {
-                number = 80
-              }
-            }
-          }
-        }
-
-        path {
-          path      = "/docs"
+          path = "/docs/"
           path_type = "Exact"
           backend {
             service {
-              name = kubernetes_service_v1.nginx_internal.metadata[0].name
+              name = kubernetes_service_v1.backend_internal.metadata[0].name
               port {
                 number = 80
               }
             }
           }
         }
-
         path {
-          path      = "/"
+          path = "/api/"
           path_type = "Prefix"
           backend {
             service {
-              name = kubernetes_service_v1.frontend_internal.metadata[0].name
+              name = kubernetes_service_v1.backend_internal.metadata[0].name
               port {
                 number = 80
               }

@@ -34,7 +34,7 @@ export default function ProjectsPage() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/topic/topics/`, {
+        const response = await fetch(`${API_BASE_URL}/api/topic/topics/`, {
           headers: {
             'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json',

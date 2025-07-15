@@ -64,7 +64,7 @@ export default function SignUpPage() {
     if (Object.keys(errors).length > 0) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/account/api/user/`, {
+      const res = await fetch(`${API_BASE_URL}/api/account/user/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

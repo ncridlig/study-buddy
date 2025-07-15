@@ -74,7 +74,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
       if (!projectId) return;
       setLoadingFiles(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/topic/topics/${projectId}/files/`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+        const response = await fetch(`${API_BASE_URL}/api/topic/topics/${projectId}/files/`, { headers: { 'Authorization': `Bearer ${authToken}` } });
         if (!response.ok) throw new Error(`Failed to fetch files: ${response.statusText}`);
         const data: PdfFile[] = await response.json();
         setFiles(data);
@@ -89,7 +89,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         if (!projectId) return;
         if (questions.length === 0) setLoadingQuestions(true);
         try {
-            const taskResponse = await fetch(`${API_BASE_URL}/result/qa/${projectId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+            const taskResponse = await fetch(`${API_BASE_URL}/api/result/qa/${projectId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
             if (!taskResponse.ok) throw new Error('No QA found.');
             const allTasks: QaGenerationTask[] = await taskResponse.json();
             const relevantTasks = allTasks.filter(task => task.topic === projectId && task.result_file);
@@ -129,7 +129,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
     setIsGenerating(true);
     try {
       const authToken = Cookies.get('access_token');
-      const response = await fetch(`${API_BASE_URL}/result/qa/`, {
+      const response = await fetch(`${API_BASE_URL}/api/result/qa/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -165,7 +165,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
     formData.append('file', file);
     try {
       const authToken = Cookies.get('access_token');
-      const response = await fetch(`${API_BASE_URL}/topic/topics/${projectId}/files/`, {
+      const response = await fetch(`${API_BASE_URL}/api/topic/topics/${projectId}/files/`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${authToken}` },
         body: formData,
@@ -194,7 +194,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
     if (!fileIdToDelete) return;
     try {
       const authToken = Cookies.get('access_token');
-      const response = await fetch(`${API_BASE_URL}/topic/topics/${projectId}/files/${fileIdToDelete}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/topic/topics/${projectId}/files/${fileIdToDelete}/`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
