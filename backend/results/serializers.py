@@ -38,21 +38,27 @@ class QAGenerationTaskCreateSerializer(serializers.ModelSerializer):
         return task
 
 
-# class QAGenerationTaskRetrieveSerializer(serializers.ModelSerializer):
+class QAGenerationTaskRetrieveSerializer(serializers.ModelSerializer):
 
-#     class Meta:
-#         model = QAGenerationTask
-#         fields = ['id', 'topic', 'status']
-#         read_only_fields = ['id', 'status']
+    class Meta:
+        model = QAGenerationTask
+        fields = ['id', 'topic', 'status']
+        read_only_fields = ['id', 'status']
 
-#     def to_representation(self, instance):
-#         representation = super().to_representation(instance)
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
 
-#         if instance.result_file:
+        if instance.result_file:
+            try:
+                with instance.result_file.open('r', encoding='utf-8') as f:
+                    content = f.read()
+                representation['result_file_content'] = content
+            except Exception as e:
+                representation['result_file_content'] = f"Error reading file: {str(e)}"
             
-#             representation['result_file'] = instance.result_file.url
+            representation['result_file'] = instance.result_file.url
             
-#         else:
-#             representation['result_file'] = "Q&A generation in progress"
+        else:
+            representation['result_file'] = "Q&A generation in progress"
 
-#         return representation
+        return representation
