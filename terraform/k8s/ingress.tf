@@ -15,7 +15,7 @@ resource "kubernetes_manifest" "managed_cert" {
     }
     "spec" = {
       "domains" = [
-        "study-buddy.duckdns.org", # Fully qualified domain name
+        "study-buddy.duckdns.org", # Add more domains if needed
       ]
     }
   }
@@ -23,7 +23,7 @@ resource "kubernetes_manifest" "managed_cert" {
 
 
 # Kubernetes Ingress
-# The central piece that routes external traffic to your service
+# The central piece that routes external traffic to the service
 # and attaches the SSL certificate.
 resource "kubernetes_ingress_v1" "ingress" {
   metadata {
@@ -64,18 +64,33 @@ resource "kubernetes_ingress_v1" "ingress" {
             }
           }
         }
-                path {
-          path      = "/*"
-          path_type = "ImplementationSpecific"
+
+        path {
+          path = "/docs"
+          path_type = "Exact"
           backend {
             service {
-              name = kubernetes_service_v1.frontend_internal.metadata[0].name
+              name = kubernetes_service_v1.backend_internal.metadata[0].name
               port {
                 number = 80
               }
             }
           }
         }
+
+        path {
+          path = "/admin"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = kubernetes_service_v1.backend_internal.metadata[0].name
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+
         path {
           path = "/api/"
           path_type = "Prefix"
