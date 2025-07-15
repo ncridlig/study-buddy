@@ -15,6 +15,7 @@ env:
 
 jobs:
   security-and-lint:
+    name: Security and Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -48,18 +49,48 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.GCP_SA_EMAIL }}
 
-      - name: Create .tfvars file
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          echo "${{ secrets.TF_VARS }}" | tee terraform.tfvars > /dev/null
-
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan -var-file=terraform.tfvars
+        run: |
+          terraform plan \
+            -var="gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var="gcp_region=${{ secrets.GCP_REGION }}" \
+            -var="machine_type=${{ secrets.MACHINE_TYPE }}" \
+            -var="environment=${{ secrets.ENVIRONMENT }}" \
+            -var="business_divsion=${{ secrets.BUSINESS_DIVSION }}" \
+            -var="NAME=${{ secrets.NAME }}" \
+            -var="USER=${{ secrets.USER }}" \
+            -var="PASSWORD=${{ secrets.PASSWORD }}" \
+            -var="DB_VERSION=${{ secrets.DB_VERSION }}" \
+            -var="SECRET_KEY=${{ secrets.SECRET_KEY }}" \
+            -var="DEBUG=${{ secrets.DEBUG }}" \
+            -var="HOST=${{ secrets.HOST }}" \
+            -var="PORT=${{ secrets.PORT }}" \
+            -var="REDIS_HOST=${{ secrets.REDIS_HOST }}" \
+            -var="DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}" \
+            -var="DJANGO_SUPERUSER_FIRSTNAME=${{ secrets.DJANGO_SUPERUSER_FIRSTNAME }}" \
+            -var="DJANGO_SUPERUSER_LASTNAME=${{ secrets.DJANGO_SUPERUSER_LASTNAME }}" \
+            -var="DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" \
+            -var="DJANGO_SETTINGS_MODULE=${{ secrets.DJANGO_SETTINGS_MODULE }}" \
+            -var="ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" \
+            -var="ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" \
+            -var="LLM_SERVICE_URL=${{ secrets.LLM_SERVICE_URL }}" \
+            -var="CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}" \
+            -var="ON_CLOUD=${{ secrets.ON_CLOUD }}" \
+            -var="GS_BUCKET_STATIC_NAME=${{ secrets.GS_BUCKET_STATIC_NAME }}" \
+            -var="GS_BUCKET_MEDIA_NAME=${{ secrets.GS_BUCKET_MEDIA_NAME }}" \
+            -var="REDIS_HOST_LLM=${{ secrets.REDIS_HOST_LLM }}" \
+            -var="BACKEND_URL=${{ secrets.BACKEND_URL }}" \
+            -var="ASYNC_JOB_MAX_RETRIES=${{ secrets.ASYNC_JOB_MAX_RETRIES }}" \
+            -var="ASYNC_JOB_RETRY_DELAY=${{ secrets.ASYNC_JOB_RETRY_DELAY }}" \
+            -var="ASYNC_JOB_TIMEOUT=${{ secrets.ASYNC_JOB_TIMEOUT }}" \
+            -var="MARK_LEFTOVER_RESULT_KEY=${{ secrets.MARK_LEFTOVER_RESULT_KEY }}" \
+            -var="MARK_DANGLING_RESULT_KEY=${{ secrets.MARK_DANGLING_RESULT_KEY }}" \
+            -var="STUDY_FRIEND_CUDA=${{ secrets.STUDY_FRIEND_CUDA }}"
 
       - name: Await Manual Approval
         uses: trstringer/manual-approval@v1
@@ -71,7 +102,42 @@ jobs:
       - name: Apply Terraform Configuration
         id: apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply -auto-approve \
+            -var="gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var="gcp_region=${{ secrets.GCP_REGION }}" \
+            -var="machine_type=${{ secrets.MACHINE_TYPE }}" \
+            -var="environment=${{ secrets.ENVIRONMENT }}" \
+            -var="business_divsion=${{ secrets.BUSINESS_DIVSION }}" \
+            -var="NAME=${{ secrets.NAME }}" \
+            -var="USER=${{ secrets.USER }}" \
+            -var="PASSWORD=${{ secrets.PASSWORD }}" \
+            -var="DB_VERSION=${{ secrets.DB_VERSION }}" \
+            -var="SECRET_KEY=${{ secrets.SECRET_KEY }}" \
+            -var="DEBUG=${{ secrets.DEBUG }}" \
+            -var="HOST=${{ secrets.HOST }}" \
+            -var="PORT=${{ secrets.PORT }}" \
+            -var="REDIS_HOST=${{ secrets.REDIS_HOST }}" \
+            -var="DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}" \
+            -var="DJANGO_SUPERUSER_FIRSTNAME=${{ secrets.DJANGO_SUPERUSER_FIRSTNAME }}" \
+            -var="DJANGO_SUPERUSER_LASTNAME=${{ secrets.DJANGO_SUPERUSER_LASTNAME }}" \
+            -var="DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" \
+            -var="DJANGO_SETTINGS_MODULE=${{ secrets.DJANGO_SETTINGS_MODULE }}" \
+            -var="ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" \
+            -var="ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" \
+            -var="LLM_SERVICE_URL=${{ secrets.LLM_SERVICE_URL }}" \
+            -var="CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}" \
+            -var="ON_CLOUD=${{ secrets.ON_CLOUD }}" \
+            -var="GS_BUCKET_STATIC_NAME=${{ secrets.GS_BUCKET_STATIC_NAME }}" \
+            -var="GS_BUCKET_MEDIA_NAME=${{ secrets.GS_BUCKET_MEDIA_NAME }}" \
+            -var="REDIS_HOST_LLM=${{ secrets.REDIS_HOST_LLM }}" \
+            -var="BACKEND_URL=${{ secrets.BACKEND_URL }}" \
+            -var="ASYNC_JOB_MAX_RETRIES=${{ secrets.ASYNC_JOB_MAX_RETRIES }}" \
+            -var="ASYNC_JOB_RETRY_DELAY=${{ secrets.ASYNC_JOB_RETRY_DELAY }}" \
+            -var="ASYNC_JOB_TIMEOUT=${{ secrets.ASYNC_JOB_TIMEOUT }}" \
+            -var="MARK_LEFTOVER_RESULT_KEY=${{ secrets.MARK_LEFTOVER_RESULT_KEY }}" \
+            -var="MARK_DANGLING_RESULT_KEY=${{ secrets.MARK_DANGLING_RESULT_KEY }}" \
+            -var="STUDY_FRIEND_CUDA=${{ secrets.STUDY_FRIEND_CUDA }}"
 
       - name: Clean up sensitive files
         if: always()
