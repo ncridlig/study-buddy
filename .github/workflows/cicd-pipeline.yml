@@ -27,11 +27,6 @@ jobs:
         run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      # - name: Terraform Security Scan (tfsec)
-      #   uses: aquasecurity/tfsec-action@v1.0.3
-      #   with:
-      #     working_directory: ${{ env.TF_WORKING_DIR }}
-
   terraform-apply:
     name: Terraform Plan & Apply
     needs: [security-and-lint]
@@ -55,7 +50,8 @@ jobs:
 
       - name: Create .tfvars file
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: echo "${{ secrets.TF_VARS }}" > terraform.tfvars
+        run: |
+          echo "${{ secrets.TF_VARS }}" | tee terraform.tfvars > /dev/null
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
