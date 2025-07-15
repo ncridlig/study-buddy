@@ -119,7 +119,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
             if (!taskResponse.ok) throw new Error('Could not check QA status.');
             
             const allTasks: QaGenerationTask[] = await taskResponse.json();
-
+            console.log("QAs", allTasks);
             // ✨ NEW: Check if any task is currently active
             const isTaskActive = allTasks.some(task => task.status === 'PENDING' || task.status === 'PROCESSING');
             setIsGenerating(isTaskActive);
