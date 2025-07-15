@@ -7,7 +7,7 @@ import { Box, Container, Typography, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AlertColor } from '@mui/material/Alert';
 import Cookies from 'js-cookie';
-import { PdfFile, Question } from '@/types';
+import { PdfFile } from '@/types';
 import { use } from 'react';
 
 // Import all the necessary child components
@@ -16,12 +16,14 @@ import QaDisplay from '@/components/QaDisplay';
 import FeedbackAlert from '@/components/FeedbackAlert';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
 
-// This interface matches the API response for a QA generation task
+// ✨ CHANGE: Updated interface to match your data structure
 interface QaGenerationTask {
-  id: string;
-  topic: string;
-  status: string; // e.g., 'PENDING', 'SUCCESS', 'FAILURE'
-  result_file: string | null; // URL to a markdown file
+  id: number;
+  topic: number;
+  name: string;
+  date: string;
+  status: string;
+  result_file: string | null;
 }
 interface TopicDetails {
     id: string;
@@ -30,53 +32,55 @@ interface TopicDetails {
 }
 
 
-// Helper function to parse Q&A from markdown text
-const parseQaMarkdown = (markdown: string): Question[] => {
-  if (!markdown) return [];
-  const questions: Question[] = [];
-  const blocks = markdown.trim().split(/\n\s*\n/);
-  blocks.forEach((block, index) => {
-    const qMatch = block.match(/\*\*Q:\*\*\s*(.*)/);
-    const aMatch = block.match(/\*\*A:\*\*\s*(.*)/);
-    if (qMatch && aMatch) {
-      questions.push({
-        id: `q-${index}-${Date.now()}`,
-        q: qMatch[1].trim(),
-        a: aMatch[1].trim(),
-      });
-    }
-  });
-  return questions;
-};
+// // This helper function is no longer used here but might be used in QaDisplay later
+// const parseQaMarkdown = (markdown: string): Question[] => {
+//   if (!markdown) return [];
+//   const questions: Question[] = [];
+//   const blocks = markdown.trim().split(/\n\s*\n/);
+//   blocks.forEach((block, index) => {
+//     const qMatch = block.match(/\*\*Q:\*\*\s*(.*)/);
+//     const aMatch = block.match(/\*\*A:\*\*\s*(.*)/);
+//     if (qMatch && aMatch) {
+//       questions.push({
+//         id: `q-${index}-${Date.now()}`,
+//         q: qMatch[1].trim(),
+//         a: aMatch[1].trim(),
+//       });
+//     }
+//   });
+//   return questions;
+// };
 
 export default function ProjectDetailPage({ params }: { params: any}) {
+  const router = useRouter();
+  
   // State for data and UI status
   const [files, setFiles] = useState<PdfFile[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  // ✨ CHANGE: New state for the list of QA generation tasks
+  const [qaTasks, setQaTasks] = useState<QaGenerationTask[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false); // Now also represents an active task on the backend
+  const [isGenerating, setIsGenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const [projectName, setProjectName] = useState<string>('');
-  // State for the feedback alert (snackbar)
+  
   const [alertState, setAlertState] = useState<{ open: boolean; message: string; severity: AlertColor; }>({
     open: false, message: '', severity: 'success',
   });
 
-  // State for the delete confirmation dialog
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [fileIdToDelete, setFileIdToDelete] = useState<string | null>(null);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
   const { projectId } = use(params) as { projectId: string };
 
   // --- Data Fetching ---
   useEffect(() => {
     const authToken = Cookies.get('access_token');
-        const fetchProjectDetails = async () => {
+    
+    const fetchProjectDetails = async () => {
         if (!projectId) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/topic/topics/${projectId}/`, {
@@ -87,9 +91,10 @@ export default function ProjectDetailPage({ params }: { params: any}) {
             setProjectName(data.title);
         } catch (err: any) {
             console.error(err.message);
-            setProjectName('Project Details'); // Set a fallback name on error
+            setProjectName('Project Details');
         }
     };
+    
     const fetchFiles = async () => {
       if (!projectId) return;
       setLoadingFiles(true);
@@ -105,37 +110,29 @@ export default function ProjectDetailPage({ params }: { params: any}) {
       }
     };
 
+    // ✨ CHANGE: Simplified function to fetch the list of tasks
     const fetchQuestions = async () => {
         if (!projectId) return;
-        if (questions.length === 0) setLoadingQuestions(true);
+        if (qaTasks.length === 0) setLoadingQuestions(true);
         try {
             const taskResponse = await fetch(`${API_BASE_URL}/api/result/qa/${projectId}`, { headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json', } });
-            console.log("response", taskResponse)
-            if (taskResponse.status === 404) { // No tasks found yet
+            
+            if (taskResponse.status === 404) {
                 setIsGenerating(false);
-                setQuestions([]);
+                setQaTasks([]); // Set tasks to empty array
                 return;
             }
             if (!taskResponse.ok) throw new Error('Could not check QA status.');
             
             const allTasks: QaGenerationTask[] = await taskResponse.json();
-            console.log("QAs", allTasks);
-            // ✨ NEW: Check if any task is currently active
+            
             const isTaskActive = allTasks.some(task => task.status === 'PENDING' || task.status === 'PROCESSING');
             setIsGenerating(isTaskActive);
             
-            const relevantTasks = allTasks.filter(task => task.topic === projectId && task.result_file);
-            const allQuestions = await Promise.all(
-                relevantTasks.map(async (task) => {
-                    const contentResponse = await fetch(task.result_file!, { headers: { 'Authorization': `Bearer ${authToken}` } });
-                    if (!contentResponse.ok) return [];
-                    const markdown = await contentResponse.text();
-                    return parseQaMarkdown(markdown);
-                })
-            );
-            setQuestions(allQuestions.flat());
+            // Just set the tasks, don't fetch content here
+            setQaTasks(allTasks.filter(task => task.status === 'SUCCESS' && task.result_file));
+
         } catch (err: any) {
-            // Avoid showing an error if it's just a 404 for no questions
             if (err.message !== 'Could not check QA status.') {
                 setAlertState({ open: true, message: err.message, severity: 'error' });
             }
@@ -149,20 +146,16 @@ export default function ProjectDetailPage({ params }: { params: any}) {
     fetchQuestions();
 
     if (pollingRef.current) clearInterval(pollingRef.current);
-    
     pollingRef.current = setInterval(fetchQuestions, 10000);
 
-    // Cleanup on component unmount
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
 
-  }, [params, API_BASE_URL, questions.length, projectId]);
+  }, [params, API_BASE_URL, qaTasks.length, projectId]);
 
-
-  // --- Action Handlers ---
+  // --- Action Handlers (No Changes) ---
   const handleGenerateQuestions = async () => {
-    // We keep the local `isGenerating` state for immediate feedback on the button
     setIsGenerating(true); 
     try {
       const authToken = Cookies.get('access_token');
@@ -174,34 +167,24 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         },
         body: JSON.stringify({ topic: projectId }),
       });
-
-      // ✨ MODIFIED: Handle 409 Conflict as a 'warning' instead of an 'error'
       if (response.status === 409) {
         const errorData = await response.json();
         setAlertState({ 
           open: true, 
-          message: errorData.detail || 'A generation task is already in progress. Results will appear here when ready.', 
-          severity: 'warning' // Yellow banner
+          message: errorData.detail || 'A generation task is already in progress.', 
+          severity: 'warning'
         });
       } else if (!response.ok) {
-        // Handle other potential errors
         throw new Error('Failed to start question generation.');
       } else {
-        // Handle success
         setAlertState({ open: true, message: 'Question generation started! Results will appear automatically.', severity: 'success' });
       }
-
     } catch (err: any) {
       setAlertState({ open: true, message: err.message, severity: 'error' });
-      // If the API call failed, we should not be in a generating state
       setIsGenerating(false);
     } 
-    // We no longer set `isGenerating` to false in a `finally` block,
-    // as the polling mechanism will now be responsible for this.
   };
-
   const handleUploadClick = () => { fileInputRef.current?.click(); };
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -229,12 +212,10 @@ export default function ProjectDetailPage({ params }: { params: any}) {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
-
   const handleDeleteClick = (fileId: string) => {
     setFileIdToDelete(fileId);
     setConfirmDialogOpen(true);
   };
-
   const handleConfirmDelete = async () => {
     if (!fileIdToDelete) return;
     try {
@@ -253,9 +234,8 @@ export default function ProjectDetailPage({ params }: { params: any}) {
       setFileIdToDelete(null);
     }
   };
-
   const handleCloseAlert = () => { setAlertState({ ...alertState, open: false }); };
-  const router = useRouter()
+
   // --- Render ---
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 64px)', mt: 5, pt: 5 }}>
@@ -272,23 +252,18 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         title="Delete File?"
         contentText="Are you sure you want to delete this file permanently? This action cannot be undone."
       />
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        style={{ display: 'none' }}
-        accept="application/pdf,.doc,.docx,.txt"
-      />
+      <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} accept="application/pdf,.doc,.docx,.txt" />
 
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }}}>
-            <IconButton onClick={() => router.back()} aria-label="go back">
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <IconButton onClick={() => router.back()} aria-label="go back" sx={{ mr: 1 }}>
                 <ArrowBackIcon />
             </IconButton>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', ml: 3 }}>
-          {projectName || 'Loading Project...'}
-        </Typography>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+              {projectName || 'Loading Project...'}
+            </Typography>
+        </Box>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px 1fr' }, gap: { xs: 3, md: 4 } }}>
-          {/* File Management Section */}
           <PdfManager
             files={files}
             onUpload={handleUploadClick}
@@ -297,13 +272,14 @@ export default function ProjectDetailPage({ params }: { params: any}) {
             isUploading={isUploading}
           />
 
-          {/* Q&A Display Section */}
+          {/* ✨ CHANGE: Pass the list of tasks to the display component */}
           <QaDisplay
-            questions={questions}
+            tasks={qaTasks}
             onGenerate={handleGenerateQuestions}
             isLoading={loadingQuestions}
             isGenerating={isGenerating}
             fileCount={files.length}
+            apiBaseUrl={API_BASE_URL}
           />
         </Box>
       </Container>
