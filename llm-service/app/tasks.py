@@ -61,7 +61,7 @@ def prepare_question_and_answers(files, task_id, **kwargs):
                 check=True,
                 capture_output=True,
                 text=True,
-                timeout=3600  # 1 hour timeout, make into the same variable as ASYNC_JOB_TIMEOUT
+                timeout=settings.ASYNC_JOB_TIMEOUT
             )
             if not output_file.exists():
                 raise FileNotFoundError(f"Expected output file {output_file} not found.")
@@ -73,6 +73,8 @@ def prepare_question_and_answers(files, task_id, **kwargs):
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"study_friend query failed: {e.stderr}")
         except subprocess.TimeoutExpired:
+            logger.error(f"study_friend query timed out after {settings.ASYNC_JOB_TIMEOUT} seconds")
+            print(f"study_friend query timed out after {settings.ASYNC_JOB_TIMEOUT} seconds")
             raise RuntimeError("study_friend query timed out")
     except Exception as e:
         logger.error(f"Error in prepare_question_and_answers: {e}", exc_info=True)
