@@ -12,7 +12,7 @@ steps:
       - |
         echo "SKIP_BACKEND=false"   >> /workspace/flags.env
         echo "SKIP_FRONTEND=true" >> /workspace/flags.env
-        echo "SKIP_LLM=false"       >> /workspace/flags.env
+        echo "SKIP_LLM=true"       >> /workspace/flags.env
 
   # 1. Fetch backend secrets from Secret Manager and write to backend/.env
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
