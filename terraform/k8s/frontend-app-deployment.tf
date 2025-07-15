@@ -124,6 +124,10 @@ resource "kubernetes_service_v1" "frontend" {
 resource "kubernetes_service_v1" "frontend_internal" {
   metadata {
     name = "frontend-internal"
+    annotations = {
+      "cloud.google.com/neg" : "{\"ingress\": true}",
+      "cloud.google.com/backend-config" : "{\"default\": \"enable-cdn-config\"}"
+    }
   }
 
   spec {
@@ -138,6 +142,23 @@ resource "kubernetes_service_v1" "frontend_internal" {
     }
 
     type = "NodePort"
+  }
+}
+
+# ADD THIS ENTIRE RESOURCE BLOCK
+resource "kubernetes_manifest" "cdn_backendconfig" {
+  manifest = {
+    "apiVersion" = "cloud.google.com/v1"
+    "kind"       = "BackendConfig"
+    "metadata" = {
+      "name"      = "enable-cdn-config"
+      "namespace" = "default"
+    }
+    "spec" = {
+      "cdn" = {
+        "enabled" = true
+      }
+    }
   }
 }
 
