@@ -33,6 +33,7 @@ jobs:
     needs: [security-and-lint]
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment: terraform
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -49,6 +50,9 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.GCP_SA_EMAIL }}
+
+      - name: Echo GCP Region
+        run: echo "GCP Region is ${{ secrets.GCP_REGION }}"
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
