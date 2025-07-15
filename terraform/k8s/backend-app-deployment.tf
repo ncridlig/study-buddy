@@ -162,10 +162,10 @@ resource "kubernetes_service_v1" "backend_internal" {
   metadata {
     name = "backend-internal"
 
-    annotations = {
-      "cloud.google.com/neg" : "{\"ingress\": true}",
-      "cloud.google.com/backend-config" : "{\"default\": \"api-sec-config\"}"
-    }
+    # annotations = {
+    #   "cloud.google.com/neg" : "{\"ingress\": true}",
+    #   "cloud.google.com/backend-config" : "{\"default\": \"api-sec-config\"}"
+    # }
   }
 
   spec {
@@ -222,19 +222,19 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "backend_hpa" {
     }
 }
 
-resource "kubernetes_manifest" "api_backendconfig" {
-  manifest = {
-    "apiVersion" = "cloud.google.com/v1"
-    "kind"       = "BackendConfig"
-    "metadata" = {
-      "name"      = "api-sec-config"
-      "namespace" = "default"
-    }
-    # "spec" = {
-    #   # This block attaches the WAF policy
-    #   "securityPolicy" = {
-    #     "name" = google_compute_security_policy.waf_policy.name
-    #   }
-    # }
-  }
-}
+# resource "kubernetes_manifest" "api_backendconfig" {
+#   manifest = {
+#     "apiVersion" = "cloud.google.com/v1"
+#     "kind"       = "BackendConfig"
+#     "metadata" = {
+#       "name"      = "api-sec-config"
+#       "namespace" = "default"
+#     }
+#     # "spec" = {
+#     #   # This block attaches the WAF policy
+#     #   "securityPolicy" = {
+#     #     "name" = google_compute_security_policy.waf_policy.name
+#     #   }
+#     # }
+#   }
+# }
