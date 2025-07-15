@@ -2,7 +2,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Box, Container } from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { Box, Container, Typography, IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AlertColor } from '@mui/material/Alert';
 import Cookies from 'js-cookie';
 import { PdfFile, Question } from '@/types';
@@ -20,6 +22,11 @@ interface QaGenerationTask {
   topic: string;
   status: string; // e.g., 'PENDING', 'SUCCESS', 'FAILURE'
   result_file: string | null; // URL to a markdown file
+}
+interface TopicDetails {
+    id: string;
+    title: string;
+    description: string;
 }
 
 
@@ -52,7 +59,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
   const [isGenerating, setIsGenerating] = useState(false); // Now also represents an active task on the backend
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
-
+  const [projectName, setProjectName] = useState<string>('');
   // State for the feedback alert (snackbar)
   const [alertState, setAlertState] = useState<{ open: boolean; message: string; severity: AlertColor; }>({
     open: false, message: '', severity: 'success',
@@ -69,7 +76,20 @@ export default function ProjectDetailPage({ params }: { params: any}) {
   // --- Data Fetching ---
   useEffect(() => {
     const authToken = Cookies.get('access_token');
-
+        const fetchProjectDetails = async () => {
+        if (!projectId) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/topic/topics/${projectId}/`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!response.ok) throw new Error('Failed to fetch project details.');
+            const data: TopicDetails = await response.json();
+            setProjectName(data.title);
+        } catch (err: any) {
+            console.error(err.message);
+            setProjectName('Project Details'); // Set a fallback name on error
+        }
+    };
     const fetchFiles = async () => {
       if (!projectId) return;
       setLoadingFiles(true);
@@ -124,6 +144,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         }
     };
 
+    fetchProjectDetails();
     fetchFiles();
     fetchQuestions();
 
@@ -234,7 +255,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
   };
 
   const handleCloseAlert = () => { setAlertState({ ...alertState, open: false }); };
-
+  const router = useRouter()
   // --- Render ---
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 64px)', mt: 5, pt: 5 }}>
@@ -259,7 +280,13 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         accept="application/pdf,.doc,.docx,.txt"
       />
 
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }}}>
+            <IconButton onClick={() => router.back()} aria-label="go back">
+                <ArrowBackIcon />
+            </IconButton>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', ml: 3 }}>
+          {projectName || 'Loading Project...'}
+        </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px 1fr' }, gap: { xs: 3, md: 4 } }}>
           {/* File Management Section */}
           <PdfManager
