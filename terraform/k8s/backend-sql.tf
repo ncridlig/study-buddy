@@ -7,8 +7,14 @@ resource "google_sql_database_instance" "main" {
 
     settings {
         tier    = "db-f1-micro"
-        edition = "ENTERPRISE"
         availability_type = "ZONAL"
+
+        #### HA(high availability) and replication ####
+        # tier    = "db-g1-small"   
+        # availability_type = "REGIONAL"
+        ###############################################
+
+        edition = "ENTERPRISE"
         disk_autoresize = true
         disk_autoresize_limit = 20
         disk_size = 10
