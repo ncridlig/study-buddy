@@ -41,6 +41,15 @@ resource "kubernetes_deployment_v1" "backend" {
                         }
                     }
 
+                    env {
+                        name = "POD_IP"
+                        value_from {
+                            field_ref {
+                                field_path = "status.podIP"
+                            }
+                        }
+                    }
+
                     port {
                         container_port = 8000
                     }
