@@ -78,6 +78,7 @@ resource "kubernetes_deployment_v1" "llm-api" {
     }
 }
 
+# INTERNAL SERVICE
 resource "kubernetes_service_v1" "llm-api" {
     metadata {
         name = "llm-api"
@@ -94,7 +95,7 @@ resource "kubernetes_service_v1" "llm-api" {
         target_port = 8000
         }
 
-        type = "LoadBalancer"
+        type = "ClusterIP"
     }
 }
 

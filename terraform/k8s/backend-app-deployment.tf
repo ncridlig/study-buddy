@@ -136,25 +136,26 @@ resource "kubernetes_deployment_v1" "backend" {
     }
 }
 
-resource "kubernetes_service_v1" "backend" {
-    metadata {
-        name = "backend"
-    }
+# FOR DEV
+# resource "kubernetes_service_v1" "backend" {
+#     metadata {
+#         name = "backend"
+#     }
 
-    spec {
-        selector = {
-        app = "backend"
-        }
+#     spec {
+#         selector = {
+#         app = "backend"
+#         }
 
-        port {
-        protocol    = "TCP"
-        port        = 8000
-        target_port = 8000
-        }
+#         port {
+#         protocol    = "TCP"
+#         port        = 8000
+#         target_port = 8000
+#         }
 
-        type = "ClusterIP"
-    }
-}
+#         type = "ClusterIP"
+#     }
+# }
 
 # FOR PROD
 resource "kubernetes_service_v1" "backend_internal" {
