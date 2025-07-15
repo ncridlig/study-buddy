@@ -230,11 +230,11 @@ resource "kubernetes_manifest" "api_backendconfig" {
       "name"      = "api-sec-config"
       "namespace" = "default"
     }
-    "spec" = {
-      # This block attaches the WAF policy
-      "securityPolicy" = {
-        "name" = google_compute_security_policy.waf_policy.name
-      }
-    }
+    # "spec" = {
+    #   # This block attaches the WAF policy
+    #   "securityPolicy" = {
+    #     "name" = google_compute_security_policy.waf_policy.name
+    #   }
+    # }
   }
 }

@@ -158,9 +158,9 @@ resource "kubernetes_manifest" "cdn_backendconfig" {
       "cdn" = {
         "enabled" = true
       }
-      "securityPolicy" = {
-        "name" = google_compute_security_policy.waf_policy.name
-      }
+      # "securityPolicy" = {
+      #   "name" = google_compute_security_policy.waf_policy.name
+      # }
     }
   }
 }
