@@ -15,9 +15,9 @@ class QAGenerationTaskCreateSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
 
         if instance.result_file:
-            date_str = instance.created.strftime("%d.%m.%Y").replace('.', '-')
             topic_title = instance.topic.title.replace('.', '-').replace(' ', '-')
-            representation['name'] = f'{topic_title}_{date_str}.md'
+            representation['name'] = f'{topic_title}.md'
+            representation['date'] = instance.created.strftime("%d.%m.%Y").replace('.', '-')
             representation['result_file'] = instance.result_file.url
         else:
             representation['result_file'] = "Q&A generation in progress"
@@ -36,3 +36,29 @@ class QAGenerationTaskCreateSerializer(serializers.ModelSerializer):
 
         send_to_llm_service.delay(task.id)
         return task
+
+
+class QAGenerationTaskRetrieveSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = QAGenerationTask
+        fields = ['id', 'topic', 'status']
+        read_only_fields = ['id', 'status']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if instance.result_file:
+            try:
+                with instance.result_file.open('r', encoding='utf-8') as f:
+                    content = f.read()
+                representation['result_file_content'] = content
+            except Exception as e:
+                representation['result_file_content'] = f"Error reading file: {str(e)}"
+            
+            representation['result_file'] = instance.result_file.url
+            
+        else:
+            representation['result_file'] = "Q&A generation in progress"
+
+        return representation
