@@ -18,3 +18,4 @@ venv/
 .venv/
 .env
 /node_modules
+.github/workflows/gruppo-11-secret.json

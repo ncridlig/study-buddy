@@ -19,6 +19,12 @@ class QAGenerationTaskCreateSerializer(serializers.ModelSerializer):
             representation['name'] = f'{topic_title}.md'
             representation['date'] = instance.created.strftime("%d.%m.%Y").replace('.', '-')
             representation['result_file'] = instance.result_file.url
+            try:
+                with instance.result_file.open('rb') as f:
+                    content = f.read().decode('utf-8')
+                representation['result_file_content'] = content
+            except Exception as e:
+                representation['result_file_content'] = f"Error reading file: {str(e)}"
         else:
             representation['result_file'] = "Q&A generation in progress"
 
@@ -50,8 +56,8 @@ class QAGenerationTaskRetrieveSerializer(serializers.ModelSerializer):
 
         if instance.result_file:
             try:
-                with instance.result_file.open('r', encoding='utf-8') as f:
-                    content = f.read()
+                with instance.result_file.open('rb') as f:
+                    content = f.read().decode('utf-8')
                 representation['result_file_content'] = content
             except Exception as e:
                 representation['result_file_content'] = f"Error reading file: {str(e)}"

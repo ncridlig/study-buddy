@@ -33,7 +33,7 @@ resource "kubernetes_deployment_v1" "frontend" {
         service_account_name = kubernetes_service_account.frontend_k8s_sa.metadata[0].name
 
         container {
-          name  = "frontend"
+          name = "frontend"
           # IMPORTANT: Replace this with the correct path to your frontend Docker image.
           image = "europe-west1-docker.pkg.dev/gruppo-11/study-buddy-repo/frontend:latest"
 
@@ -75,11 +75,11 @@ resource "kubernetes_deployment_v1" "frontend" {
           # to ensure traffic is only sent to healthy pods.
           readiness_probe {
             http_get {
-              path = "/" 
+              path = "/"
               port = 3000
             }
             initial_delay_seconds = 5
-            period_seconds      = 10
+            period_seconds        = 10
           }
 
           liveness_probe {
@@ -88,7 +88,7 @@ resource "kubernetes_deployment_v1" "frontend" {
               port = 3000
             }
             initial_delay_seconds = 15
-            period_seconds      = 20
+            period_seconds        = 20
           }
         }
       }
@@ -137,8 +137,8 @@ resource "kubernetes_service_v1" "frontend_internal" {
 
     port {
       protocol    = "TCP"
-      port        = 80 
-      target_port = 3000 
+      port        = 80
+      target_port = 3000
     }
 
     type = "LoadBalancer"

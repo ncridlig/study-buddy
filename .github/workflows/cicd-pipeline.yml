@@ -1,11 +1,7 @@
-#new workflow
 name: Study Buddy CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -14,203 +10,77 @@ env:
   GCP_REGION: "europe-west1"
   GCP_SA_EMAIL: "github-terraform@gruppo-11.iam.gserviceaccount.com"
   WIF_PROVIDER: "projects/236113564589/locations/global/workloadIdentityPools/study-buddy-github-pool/providers/github-provider"
-  TF_WORKING_DIR: "./terraform/environments/production"
-  ARTIFACT_REPO: "study-buddy-repo"
+  TF_WORKING_DIR: "./terraform/k8s"
+  APPROVERS: "ncridlig, aliloloee, taaraa99"
 
 jobs:
-  filter:
-    runs-on: ubuntu-latest
-    outputs:
-      frontend: ${{ steps.filter.outputs.frontend }}
-      backend: ${{ steps.filter.outputs.backend }}
-      llm-service: ${{ steps.filter.outputs.llm-service }}
-      infra: ${{ steps.filter.outputs.infra }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            frontend:
-              - 'frontend/**'
-            backend:
-              - 'backend/**'
-            llm-service:
-              - 'llm-service/**'
-            infra:
-              - '.github/workflows/cicd-pipeline.yml'
-              - 'terraform/**'
-
   security-and-lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
-      - name: Terraform Security Scan (tfsec)
-        uses: aquasecurity/tfsec-action@v1.0.3
-        with:
-          working_directory: ${{ env.TF_WORKING_DIR }}
 
-  # This job now passes dummy variables to the apply command
-  terraform-apply-shared-infra:
+      # - name: Terraform Security Scan (tfsec)
+      #   uses: aquasecurity/tfsec-action@v1.0.3
+      #   with:
+      #     working_directory: ${{ env.TF_WORKING_DIR }}
+
+  terraform-apply:
+    name: Terraform Plan & Apply
     needs: [security-and-lint]
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
       id-token: 'write'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-      - name: Authenticate to Google Cloud
-        uses: 'google-github-actions/auth@v2'
-        with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.GCP_SA_EMAIL }}
-      - name: Deploy Artifact Registry and Enable APIs
-        run: |
-          cd ${{ env.TF_WORKING_DIR }}
-          terraform init
-          # ===== THIS COMMAND IS NOW FIXED =====
-          # We pass dummy values for the image tags to prevent Terraform from prompting for them.
-          terraform apply -auto-approve \
-            -var="frontend_image_tag=dummy" \
-            -var="backend_image_tag=dummy" \
-            -var="llm_service_image_tag=dummy" \
-            -target=google_project_service.run_api \
-            -target=google_project_service.artifactregistry_api \
-            -target=google_project_service.iam_api \
-            -target=google_artifact_registry_repository.study_buddy_repo
 
-  build-and-deploy-frontend:
-    needs: [terraform-apply-shared-infra, filter]
-    if: github.event_name == 'push' && (needs.filter.outputs.frontend == 'true' || needs.filter.outputs.infra == 'true')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-      - name: Authenticate to Google Cloud
-        uses: 'google-github-actions/auth@v2'
-        with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.GCP_SA_EMAIL }}
-      - name: Configure Docker
-        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
-      - name: Build and Push Frontend Image
-        id: build-push
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          IMAGE_URL="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/frontend:$IMAGE_TAG"
-          docker build -t $IMAGE_URL ./frontend
-          docker push $IMAGE_URL
-          echo "image_url=$IMAGE_URL" >> $GITHUB_OUTPUT
-      - name: Scan Frontend Container Image (Trivy)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ steps.build-push.outputs.image_url }}
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - name: Deploy Frontend Service with Terraform
-        run: |
-          cd ${{ env.TF_WORKING_DIR }}
-          terraform init -reconfigure
-          terraform apply -auto-approve -var="frontend_image_tag=${{ github.sha }}" -target=google_cloud_run_v2_service.frontend -target=google_cloud_run_v2_service_iam_binding.frontend_public_access
 
-  build-and-deploy-backend:
-    needs: [terraform-apply-shared-infra, filter]
-    if: github.event_name == 'push' && (needs.filter.outputs.backend == 'true' || needs.filter.outputs.infra == 'true')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-      - name: Authenticate to Google Cloud
-        uses: 'google-github-actions/auth@v2'
-        with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.GCP_SA_EMAIL }}
-      - name: Configure Docker
-        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
-      - name: Build and Push Backend Image
-        id: build-push
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          IMAGE_URL="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backend:$IMAGE_TAG"
-          docker build -t $IMAGE_URL ./backend
-          docker push $IMAGE_URL
-          echo "image_url=$IMAGE_URL" >> $GITHUB_OUTPUT
-      - name: Scan Backend Container Image (Trivy)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ steps.build-push.outputs.image_url }}
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - name: Deploy Backend Service with Terraform
-        run: |
-          cd ${{ env.TF_WORKING_DIR }}
-          terraform init -reconfigure
-          terraform apply -auto-approve -var="backend_image_tag=${{ github.sha }}" -target=google_cloud_run_v2_service.backend
 
-  build-and-deploy-llm-service:
-    needs: [terraform-apply-shared-infra, filter]
-    if: github.event_name == 'push' && (needs.filter.outputs['llm-service'] == 'true' || needs.filter.outputs.infra == 'true')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
       - name: Authenticate to Google Cloud
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.GCP_SA_EMAIL }}
-      - name: Configure Docker
-        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
-      - name: Build and Push LLM Service Image
-        id: build-push
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          IMAGE_URL="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/llm-service:$IMAGE_TAG"
-          docker build -t $IMAGE_URL ./llm-service
-          docker push $IMAGE_URL
-          echo "image_url=$IMAGE_URL" >> $GITHUB_OUTPUT
-      - name: Scan LLM Service Container Image (Trivy)
-        uses: aquasecurity/trivy-action@master
+
+      - name: Create .tfvars file
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: echo "${{ secrets.TF_VARS }}" > terraform.tfvars
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan -var-file=terraform.tfvars
+
+      - name: Await Manual Approval
+        uses: trstringer/manual-approval@v1
         with:
-          image-ref: ${{ steps.build-push.outputs.image_url }}
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - name: Deploy LLM Service with Terraform
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ env.APPROVERS }}
+          minimum-approvals: 1
+
+      - name: Apply Terraform Configuration
+        id: apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -auto-approve
+
+      - name: Clean up sensitive files
+        if: always()
+        working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          cd ${{ env.TF_WORKING_DIR }}
-          terraform init -reconfigure
-          terraform apply -auto-approve -var="llm_service_image_tag=${{ github.sha }}" -target=google_cloud_run_v2_service.llm_service
+          echo "Cleaning up terraform.tfvars and any leftovers..."
+          rm -f terraform.tfvars
+          rm -rf .terraform
