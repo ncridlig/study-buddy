@@ -47,7 +47,8 @@ class QAGenerationTaskRetrieveAPIView(generics.RetrieveAPIView):
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return QAGenerationTask.objects.none()
-        return QAGenerationTask.objects.filter(topic__user=self.request.user)
+        topic_id = self.kwargs.get('topic_id')
+        return QAGenerationTask.objects.filter(topic__user=self.request.user, topic_id=topic_id)
     
     @swagger_auto_schema(**schemas['QAGenerationTaskAPIViewSchema']['RETRIEVE'])
     def get(self, request, *args, **kwargs):
