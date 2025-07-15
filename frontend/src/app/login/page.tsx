@@ -58,8 +58,8 @@ export default function LoginPage() {
       const data = await res.json();
 
       // Save tokens in cookies
-      Cookies.set('access_token', data.access, { expires: 1 }); // 1 day
-      Cookies.set('refresh_token', data.refresh, { expires: 7 }); // 7 days
+      Cookies.set('access_token', data.access, { expires: 30 }); // 1 day
+      Cookies.set('refresh_token', data.refresh, { expires: 30 }); // 7 days
 
       // Show success message
       setAlertState({ open: true, message: 'Login successful! Redirecting...', severity: 'success' });
