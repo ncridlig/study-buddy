@@ -90,7 +90,8 @@ jobs:
             -var="ASYNC_JOB_TIMEOUT=${{ secrets.ASYNC_JOB_TIMEOUT }}" \
             -var="MARK_LEFTOVER_RESULT_KEY=${{ secrets.MARK_LEFTOVER_RESULT_KEY }}" \
             -var="MARK_DANGLING_RESULT_KEY=${{ secrets.MARK_DANGLING_RESULT_KEY }}" \
-            -var="STUDY_FRIEND_CUDA=${{ secrets.STUDY_FRIEND_CUDA }}"
+            -var="STUDY_FRIEND_CUDA=${{ secrets.STUDY_FRIEND_CUDA }}" \
+            -var="NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}"
 
       - name: Await Manual Approval
         uses: trstringer/manual-approval@v1
@@ -137,7 +138,8 @@ jobs:
             -var="ASYNC_JOB_TIMEOUT=${{ secrets.ASYNC_JOB_TIMEOUT }}" \
             -var="MARK_LEFTOVER_RESULT_KEY=${{ secrets.MARK_LEFTOVER_RESULT_KEY }}" \
             -var="MARK_DANGLING_RESULT_KEY=${{ secrets.MARK_DANGLING_RESULT_KEY }}" \
-            -var="STUDY_FRIEND_CUDA=${{ secrets.STUDY_FRIEND_CUDA }}"
+            -var="STUDY_FRIEND_CUDA=${{ secrets.STUDY_FRIEND_CUDA }}" \
+            -var="NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}"
 
       - name: Clean up sensitive files
         if: always()
