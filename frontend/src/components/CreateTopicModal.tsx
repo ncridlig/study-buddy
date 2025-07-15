@@ -46,7 +46,7 @@ export default function CreateTopicModal({
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/topic/topics/`, {
+      const response = await fetch(`${apiBaseUrl}/api/topic/topics/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,

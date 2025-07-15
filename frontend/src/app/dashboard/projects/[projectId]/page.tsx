@@ -9,7 +9,7 @@ import { PdfFile, Question } from '@/types';
 import { use } from 'react';
 
 // Import all the necessary child components
-import PdfManager from '@/components/PdfManager'; // Renamed for clarity
+import PdfManager from '@/components/PdfManager';
 import QaDisplay from '@/components/QaDisplay';
 import FeedbackAlert from '@/components/FeedbackAlert';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
@@ -18,7 +18,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog';
 interface QaGenerationTask {
   id: string;
   topic: string;
-  status: string;
+  status: string; // e.g., 'PENDING', 'SUCCESS', 'FAILURE'
   result_file: string | null; // URL to a markdown file
 }
 
@@ -49,9 +49,9 @@ export default function ProjectDetailPage({ params }: { params: any}) {
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false); // State for generation status
+  const [isGenerating, setIsGenerating] = useState(false); // Now also represents an active task on the backend
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null); // Ref to hold the interval ID
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // State for the feedback alert (snackbar)
   const [alertState, setAlertState] = useState<{ open: boolean; message: string; severity: AlertColor; }>({
@@ -90,8 +90,20 @@ export default function ProjectDetailPage({ params }: { params: any}) {
         if (questions.length === 0) setLoadingQuestions(true);
         try {
             const taskResponse = await fetch(`${API_BASE_URL}/api/result/qa/${projectId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
-            if (!taskResponse.ok) throw new Error('No QA found.');
+            
+            if (taskResponse.status === 404) { // No tasks found yet
+                setIsGenerating(false);
+                setQuestions([]);
+                return;
+            }
+            if (!taskResponse.ok) throw new Error('Could not check QA status.');
+            
             const allTasks: QaGenerationTask[] = await taskResponse.json();
+
+            // ✨ NEW: Check if any task is currently active
+            const isTaskActive = allTasks.some(task => task.status === 'PENDING' || task.status === 'PROCESSING');
+            setIsGenerating(isTaskActive);
+            
             const relevantTasks = allTasks.filter(task => task.topic === projectId && task.result_file);
             const allQuestions = await Promise.all(
                 relevantTasks.map(async (task) => {
@@ -103,7 +115,10 @@ export default function ProjectDetailPage({ params }: { params: any}) {
             );
             setQuestions(allQuestions.flat());
         } catch (err: any) {
-            setAlertState({ open: true, message: err.message, severity: 'error' });
+            // Avoid showing an error if it's just a 404 for no questions
+            if (err.message !== 'Could not check QA status.') {
+                setAlertState({ open: true, message: err.message, severity: 'error' });
+            }
         } finally {
             setLoadingQuestions(false);
         }
@@ -126,33 +141,43 @@ export default function ProjectDetailPage({ params }: { params: any}) {
 
   // --- Action Handlers ---
   const handleGenerateQuestions = async () => {
-    setIsGenerating(true);
+    // We keep the local `isGenerating` state for immediate feedback on the button
+    setIsGenerating(true); 
     try {
-      const authToken = Cookies.get('access_token');
+      // const authToken = Cookies.get('access_token');
       const response = await fetch(`${API_BASE_URL}/api/result/qa/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
+          'topic': projectId,
+          // 'Authorization': `Bearer ${authToken}`,
+          // 'Content-Type': 'application/json',
         },
         body: JSON.stringify({ topic: projectId }),
       });
 
+      // ✨ MODIFIED: Handle 409 Conflict as a 'warning' instead of an 'error'
       if (response.status === 409) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'A generation task is already in progress for this topic.');
-      }
-      if (!response.ok) {
+        setAlertState({ 
+          open: true, 
+          message: errorData.detail || 'A generation task is already in progress. Results will appear here when ready.', 
+          severity: 'warning' // Yellow banner
+        });
+      } else if (!response.ok) {
+        // Handle other potential errors
         throw new Error('Failed to start question generation.');
+      } else {
+        // Handle success
+        setAlertState({ open: true, message: 'Question generation started! Results will appear automatically.', severity: 'success' });
       }
-      
-      setAlertState({ open: true, message: 'Question generation started! Results will appear here automatically when ready.', severity: 'success' });
 
     } catch (err: any) {
       setAlertState({ open: true, message: err.message, severity: 'error' });
-    } finally {
+      // If the API call failed, we should not be in a generating state
       setIsGenerating(false);
-    }
+    } 
+    // We no longer set `isGenerating` to false in a `finally` block,
+    // as the polling mechanism will now be responsible for this.
   };
 
   const handleUploadClick = () => { fileInputRef.current?.click(); };
