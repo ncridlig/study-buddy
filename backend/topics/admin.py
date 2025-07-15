@@ -3,7 +3,7 @@ from topics.models import Topic, UploadedFile
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin) :
-    list_display = ('title', 'user')
+    list_display = ('title', 'user', 'id')
 
     @admin.display(description='user')
     def related_test(self, obj) :
