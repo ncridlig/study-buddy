@@ -190,7 +190,7 @@ variable "MARK_DANGLING_RESULT_KEY" {
 
 variable "STUDY_FRIEND_CUDA" {
   description = "Enable CUDA for study friend (1 to enable)"
-  type        = bool
+  type        = string
 }
 #################################
 
