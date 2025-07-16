@@ -91,51 +91,13 @@ jobs:
       - name: Echo GCP Region
         run: echo "GCP Region is ${{ secrets.GCP_REGION }}"
 
-      - name: Echo environment variables for debug
-        run: |
-          echo "GCP_PROJECT_ID=$GCP_PROJECT_ID"
-          echo "GCP_REGION=$GCP_REGION"
-          echo "MACHINE_TYPE=$MACHINE_TYPE"
-          echo "ENVIRONMENT=$ENVIRONMENT"
-          echo "BUSINESS_DIVSION=$BUSINESS_DIVSION"
-          echo "NAME=$NAME"
-          echo "USER=$USER"
-          # echo "PASSWORD=$PASSWORD"  # still commented out
-          echo "DB_VERSION=$DB_VERSION"
-          echo "SECRET_KEY=$SECRET_KEY"
-          echo "DEBUG=$DEBUG"
-          echo "HOST=$HOST"
-          echo "PORT=$PORT"
-          echo "REDIS_HOST=$REDIS_HOST"
-          echo "DJANGO_SUPERUSER_EMAIL=$DJANGO_SUPERUSER_EMAIL"
-          echo "DJANGO_SUPERUSER_FIRSTNAME=$DJANGO_SUPERUSER_FIRSTNAME"
-          echo "DJANGO_SUPERUSER_LASTNAME=$DJANGO_SUPERUSER_LASTNAME"
-          echo "DJANGO_SUPERUSER_PASSWORD=$DJANGO_SUPERUSER_PASSWORD"
-          echo "DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE"
-          echo "ALLOWED_HOSTS=$ALLOWED_HOSTS"
-          echo "ALLOWED_ORIGINS=$ALLOWED_ORIGINS"
-          echo "LLM_SERVICE_URL=$LLM_SERVICE_URL"
-          echo "CSRF_TRUSTED_ORIGINS=$CSRF_TRUSTED_ORIGINS"
-          echo "ON_CLOUD=$ON_CLOUD"
-          echo "GS_BUCKET_STATIC_NAME=$GS_BUCKET_STATIC_NAME"
-          echo "GS_BUCKET_MEDIA_NAME=$GS_BUCKET_MEDIA_NAME"
-          echo "REDIS_HOST_LLM=$REDIS_HOST_LLM"
-          echo "BACKEND_URL=$BACKEND_URL"
-          echo "ASYNC_JOB_MAX_RETRIES=$ASYNC_JOB_MAX_RETRIES"
-          echo "ASYNC_JOB_RETRY_DELAY=$ASYNC_JOB_RETRY_DELAY"
-          echo "ASYNC_JOB_TIMEOUT=$ASYNC_JOB_TIMEOUT"
-          echo "MARK_LEFTOVER_RESULT_KEY=$MARK_LEFTOVER_RESULT_KEY"
-          echo "MARK_DANGLING_RESULT_KEY=$MARK_DANGLING_RESULT_KEY"
-          echo "STUDY_FRIEND_CUDA=$STUDY_FRIEND_CUDA"
-          echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
-
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan -var-file=terraform.tfvars
+        run: terraform plan
 
       - name: Await Manual Approval
         uses: trstringer/manual-approval@v1
@@ -147,7 +109,7 @@ jobs:
       - name: Apply Terraform Configuration
         id: apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve -var-file=terraform.tfvars
+        run: terraform apply -auto-approve
 
       - name: Clean up sensitive files
         if: always()
