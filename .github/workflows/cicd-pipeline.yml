@@ -28,11 +28,10 @@ jobs:
         run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-  terraform-plan:
-    name: Terraform Plan
+  terraform-plan-apply:
+    name: Terraform Plan & Apply
     needs: [security-and-lint]
     runs-on: ubuntu-latest
-    timeout-minutes: 1
     environment: terraform
     env:
       TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -74,6 +73,7 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
+      issues: 'write'
 
     steps:
       - name: Checkout code
@@ -94,56 +94,7 @@ jobs:
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan
-
-  terraform-apply:
-    name: Terraform Apply
-    needs: [terraform-plan]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    environment: terraform
-    env:
-      TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
-      TF_VAR_gcp_region: ${{ secrets.GCP_REGION }}
-      TF_VAR_machine_type: ${{ secrets.MACHINE_TYPE }}
-      TF_VAR_environment: ${{ secrets.ENVIRONMENT }}
-      TF_VAR_business_divsion: ${{ secrets.BUSINESS_DIVSION }}
-      TF_VAR_NAME: ${{ secrets.NAME }}
-      TF_VAR_USER: ${{ secrets.USER }}
-      TF_VAR_PASSWORD: ${{ secrets.PASSWORD }}
-      TF_VAR_DB_VERSION: ${{ secrets.DB_VERSION }}
-      TF_VAR_SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      TF_VAR_DEBUG: ${{ secrets.DEBUG }}
-      TF_VAR_HOST: ${{ secrets.HOST }}
-      TF_VAR_PORT: ${{ secrets.PORT }}
-      TF_VAR_REDIS_HOST: ${{ secrets.REDIS_HOST }}
-      TF_VAR_DJANGO_SUPERUSER_EMAIL: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
-      TF_VAR_DJANGO_SUPERUSER_FIRSTNAME: ${{ secrets.DJANGO_SUPERUSER_FIRSTNAME }}
-      TF_VAR_DJANGO_SUPERUSER_LASTNAME: ${{ secrets.DJANGO_SUPERUSER_LASTNAME }}
-      TF_VAR_DJANGO_SUPERUSER_PASSWORD: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
-      TF_VAR_DJANGO_SETTINGS_MODULE: ${{ secrets.DJANGO_SETTINGS_MODULE }}
-      TF_VAR_ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
-      TF_VAR_ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-      TF_VAR_LLM_SERVICE_URL: ${{ secrets.LLM_SERVICE_URL }}
-      TF_VAR_CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
-      TF_VAR_ON_CLOUD: ${{ secrets.ON_CLOUD }}
-      TF_VAR_GS_BUCKET_STATIC_NAME: ${{ secrets.GS_BUCKET_STATIC_NAME }}
-      TF_VAR_GS_BUCKET_MEDIA_NAME: ${{ secrets.GS_BUCKET_MEDIA_NAME }}
-      TF_VAR_REDIS_HOST_LLM: ${{ secrets.REDIS_HOST_LLM }}
-      TF_VAR_BACKEND_URL: ${{ secrets.BACKEND_URL }}
-      TF_VAR_ASYNC_JOB_MAX_RETRIES: ${{ secrets.ASYNC_JOB_MAX_RETRIES }}
-      TF_VAR_ASYNC_JOB_RETRY_DELAY: ${{ secrets.ASYNC_JOB_RETRY_DELAY }}
-      TF_VAR_ASYNC_JOB_TIMEOUT: ${{ secrets.ASYNC_JOB_TIMEOUT }}
-      TF_VAR_MARK_LEFTOVER_RESULT_KEY: ${{ secrets.MARK_LEFTOVER_RESULT_KEY }}
-      TF_VAR_MARK_DANGLING_RESULT_KEY: ${{ secrets.MARK_DANGLING_RESULT_KEY }}
-      TF_VAR_STUDY_FRIEND_CUDA: ${{ secrets.STUDY_FRIEND_CUDA }}
-      TF_VAR_NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-      
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-
-    steps:
+        run: terraform plan -out=tfplan
 
       - name: Await Manual Approval
         uses: trstringer/manual-approval@v1
@@ -155,12 +106,12 @@ jobs:
       - name: Apply Terraform Configuration
         id: apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve tfplan
 
       - name: Clean up sensitive files
         if: always()
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          echo "Cleaning up terraform.tfvars and any leftovers..."
-          rm -f terraform.tfvars
+          echo "Cleaning up terraform leftovers..."
+          rm -f tfplan
           rm -rf .terraform
