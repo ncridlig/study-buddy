@@ -7,12 +7,12 @@ resource "kubernetes_role_v1" "terraform_secret_manager" {
 
   rule {
     api_groups = [""]
-    resources  = [
-      "secrets", 
+    resources = [
+      "secrets",
       "deployments",
-      "services"     
+      "services"
     ]
-    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+    verbs = ["get", "list", "watch", "create", "update", "patch", "delete"]
   }
 }
 
