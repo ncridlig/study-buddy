@@ -10,7 +10,7 @@ steps:
     args:
       - "-c"
       - |
-        echo "SKIP_BACKEND=true"   >> /workspace/flags.env
+        echo "SKIP_BACKEND=false"   >> /workspace/flags.env
         echo "SKIP_FRONTEND=true" >> /workspace/flags.env
         echo "SKIP_LLM=true"       >> /workspace/flags.env
 
