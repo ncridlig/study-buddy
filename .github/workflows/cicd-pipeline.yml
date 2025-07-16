@@ -32,7 +32,7 @@ jobs:
     name: Terraform Plan & Apply
     needs: [security-and-lint]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 29
     environment: terraform
     permissions:
       contents: 'read'
