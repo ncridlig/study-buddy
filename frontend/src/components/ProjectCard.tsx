@@ -13,11 +13,11 @@ interface Project {
 // ✅ Updated props to include the onDelete function
 interface ProjectCardProps {
   project: Project;
-  // onDelete?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 // ✅ This component now accepts the onDelete prop
-export default function ProjectCard({ project}: ProjectCardProps) {
+export default function ProjectCard({ project, onDelete}: ProjectCardProps) {
   return (
     // Added flex styles to ensure cards have equal height in a row
     <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -38,13 +38,13 @@ export default function ProjectCard({ project}: ProjectCardProps) {
           Open Project
         </Button>
         {/* ✅ NEW: The Delete Button */}
-        {/* <Button
+        <Button
           size="small"
           color="error" // 'error' color makes it red, indicating a destructive action
           onClick={() => onDelete(project.id)}
         >
           Delete
-        </Button> */}
+        </Button>
       </CardActions>
     </Card>
   );
