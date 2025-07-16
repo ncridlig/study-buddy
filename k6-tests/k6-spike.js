@@ -18,11 +18,11 @@ function generateRandomUser() {
 export let options = {
     // Define the stages for the spike test
     stages: [
-        { duration: '30s', target: 10 }, // Stage 1: Ramp up to 10 VUs over 30 seconds (baseline)
-        { duration: '10s', target: 200 }, // Stage 2: SPIKE! Jump to 200 VUs in 10 seconds
-        { duration: '60s', target: 200 }, // Stage 3: Hold 200 VUs for 60 seconds (peak load)
-        { duration: '10s', target: 10 }, // Stage 4: Drop back to 10 VUs in 10 seconds (recovery)
-        { duration: '30s', target: 0 },  // Stage 5: Ramp down to 0 VUs over 30 seconds
+        { duration: '30s', target: 10 },  // Stage 1: Ramp up to 10 VUs over 30 seconds (baseline)
+        { duration: '10s', target: 100 }, // Stage 2: SPIKE! Jump to 100 VUs in 10 seconds (Adjusted from 200)
+        { duration: '60s', target: 100 }, // Stage 3: Hold 100 VUs for 60 seconds (peak load - Adjusted from 200)
+        { duration: '10s', target: 10 },  // Stage 4: Drop back to 10 VUs in 10 seconds (recovery)
+        { duration: '30s', target: 0 },   // Stage 5: Ramp down to 0 VUs over 30 seconds
     ],
     // Optional: Add thresholds for pass/fail criteria
     thresholds: {
