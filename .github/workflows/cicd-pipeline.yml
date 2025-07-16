@@ -96,12 +96,37 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform plan -out=tfplan
 
+      - name: Create plan output for approval step
+        id: plan_text
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          # Use a unique delimiter to handle multi-line output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "plan<<$EOF" >> $GITHUB_OUTPUT
+          terraform show -no-color tfplan >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+
       - name: Await Manual Approval
         uses: trstringer/manual-approval@v1
         with:
           secret: ${{ github.TOKEN }}
           approvers: ${{ env.APPROVERS }}
           minimum-approvals: 1
+          body: |
+            A Terraform plan has been generated. Please review the changes below and approve or deny.
+            
+            **Workflow Run:** `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+
+            <details><summary>Click to view the Terraform Plan</summary>
+
+            ```terraform
+            ${{ steps.plan_text.outputs.plan }}
+            ```
+
+            </details>
+
+            > [!TIP]
+            > Respond with "approve" or "yes" to continue, or "deny" or "no" to cancel.
 
       - name: Apply Terraform Configuration
         id: apply
