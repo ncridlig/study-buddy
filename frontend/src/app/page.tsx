@@ -33,7 +33,7 @@ export default function Home() {
       </Typography>
 
       <Typography variant="h5" color="text.secondary" paragraph>
-        Turn your PDFs into smart Q&A guides and export to Anki — powered by LLMs and built for students.
+        Turn your PDFs into smart Q&A guides and export to markdown — powered by LLMs and built for students.
       </Typography>
 
       <Stack direction="row" spacing={2} justifyContent="center" mt={4}>
@@ -82,7 +82,7 @@ export default function Home() {
           2. Our AI processes it into question answer pairs.
         </Typography>
         <Typography variant="body1" paragraph>
-          3. Download your guide or export it to Anki.
+          3. Download your guide or read it on the site.
         </Typography>
       </Box>
     </Container>
