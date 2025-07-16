@@ -15,6 +15,7 @@ import PdfManager from '@/components/PdfManager';
 import QaDisplay from '@/components/QaDisplay';
 import FeedbackAlert from '@/components/FeedbackAlert';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
+import { fetchWithAuth } from '@/app/utils/fetchWithAuth';
 
 // ✨ CHANGE: Updated interface to match your data structure
 interface QaGenerationTask {
@@ -99,7 +100,7 @@ export default function ProjectDetailPage({ params }: { params: any}) {
       if (!projectId) return;
       setLoadingFiles(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/topic/topics/${projectId}/files/`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/topic/topics/${projectId}/files/`);
         if (!response.ok) throw new Error(`Failed to fetch files: ${response.statusText}`);
         const data: PdfFile[] = await response.json();
         setFiles(data);

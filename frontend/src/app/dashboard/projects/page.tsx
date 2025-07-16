@@ -22,7 +22,7 @@ import ProjectCard from '@/components/ProjectCard';
 import CreateTopicModal from '@/components/CreateTopicModal';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
 import { Project } from '@/types';
-
+import { fetchWithAuth } from '@/app/utils/fetchWithAuth';
 export default function ProjectsPage() {
   // State for projects, loading, and errors
   const [projects, setProjects] = useState<Project[]>([]);
@@ -51,11 +51,11 @@ export default function ProjectsPage() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/topic/topics/`, {
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json',
-          },
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/topic/topics/`, {
+          // headers: {
+          //   'Authorization': `Bearer ${authToken}`,
+          //   'Content-Type': 'application/json',
+          // },
         });
 
         if (!response.ok) {
