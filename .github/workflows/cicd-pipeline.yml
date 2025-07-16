@@ -35,12 +35,11 @@ jobs:
     timeout-minutes: 1
     environment: terraform
     env:
-      ACTIONS_RUNNER_DEBUG: true
-      TF_VAR_GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      TF_VAR_GCP_REGION: ${{ secrets.GCP_REGION }}
-      TF_VAR_MACHINE_TYPE: ${{ secrets.MACHINE_TYPE }}
-      TF_VAR_ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
-      TF_VAR_BUSINESS_DIVSION: ${{ secrets.BUSINESS_DIVSION }}
+      TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_gcp_region: ${{ secrets.GCP_REGION }}
+      TF_VAR_machine_type: ${{ secrets.MACHINE_TYPE }}
+      TF_VAR_environment: ${{ secrets.ENVIRONMENT }}
+      TF_VAR_business_divsion: ${{ secrets.BUSINESS_DIVSION }}
       TF_VAR_NAME: ${{ secrets.NAME }}
       TF_VAR_USER: ${{ secrets.USER }}
       TF_VAR_PASSWORD: ${{ secrets.PASSWORD }}
@@ -104,12 +103,11 @@ jobs:
     timeout-minutes: 20
     environment: terraform
     env:
-      ACTIONS_RUNNER_DEBUG: true
-      TF_VAR_GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      TF_VAR_GCP_REGION: ${{ secrets.GCP_REGION }}
-      TF_VAR_MACHINE_TYPE: ${{ secrets.MACHINE_TYPE }}
-      TF_VAR_ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
-      TF_VAR_BUSINESS_DIVSION: ${{ secrets.BUSINESS_DIVSION }}
+      TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_gcp_region: ${{ secrets.GCP_REGION }}
+      TF_VAR_machine_type: ${{ secrets.MACHINE_TYPE }}
+      TF_VAR_environment: ${{ secrets.ENVIRONMENT }}
+      TF_VAR_business_divsion: ${{ secrets.BUSINESS_DIVSION }}
       TF_VAR_NAME: ${{ secrets.NAME }}
       TF_VAR_USER: ${{ secrets.USER }}
       TF_VAR_PASSWORD: ${{ secrets.PASSWORD }}
