@@ -51,16 +51,9 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.GCP_SA_EMAIL }}
 
-      # New, secure step to create the tfvars file
       - name: Create terraform.tfvars from secret
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          # First, check that the secret is not empty
-          if [ -z "${{ secrets.TF_VARS_CONTENT }}" ]; then
-            echo "Error: TF_VARS_CONTENT secret is not set or is empty in the 'terraform' environment."
-            exit 1
-          fi
-          # Now, securely write the content to a file, preventing it from being logged
           echo "${{ secrets.TF_VARS_CONTENT }}" | sudo tee terraform.tfvars > /dev/null
           echo "terraform.tfvars file created successfully."
 
