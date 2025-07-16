@@ -51,125 +51,27 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.GCP_SA_EMAIL }}
 
-      - name: Echo GCP Region
-        run: echo "GCP Region is ${{ secrets.GCP_REGION }}"
-
-      - name: Export terraform variables as environment variables with debug echo
+      # New, secure step to create the tfvars file
+      - name: Create terraform.tfvars from secret
+        working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          export GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
-          echo "GCP_PROJECT_ID=$GCP_PROJECT_ID"
-          
-          export GCP_REGION="${{ secrets.GCP_REGION }}"
-          echo "GCP_REGION=$GCP_REGION"
-          
-          export MACHINE_TYPE="${{ secrets.MACHINE_TYPE }}"
-          echo "MACHINE_TYPE=$MACHINE_TYPE"
-          
-          export ENVIRONMENT="${{ secrets.ENVIRONMENT }}"
-          echo "ENVIRONMENT=$ENVIRONMENT"
-          
-          export BUSINESS_DIVSION="${{ secrets.BUSINESS_DIVSION }}"
-          echo "BUSINESS_DIVSION=$BUSINESS_DIVSION"
-          
-          export NAME="${{ secrets.NAME }}"
-          echo "NAME=$NAME"
-          
-          export USER="${{ secrets.USER }}"
-          echo "USER=$USER"
-          
-          export PASSWORD="${{ secrets.PASSWORD }}"
-          echo "PASSWORD=$PASSWORD"
-          
-          export DB_VERSION="${{ secrets.DB_VERSION }}"
-          echo "DB_VERSION=$DB_VERSION"
-          
-          export SECRET_KEY="${{ secrets.SECRET_KEY }}"
-          echo "SECRET_KEY=$SECRET_KEY"
-          
-          export DEBUG="${{ secrets.DEBUG }}"
-          echo "DEBUG=$DEBUG"
-          
-          export HOST="${{ secrets.HOST }}"
-          echo "HOST=$HOST"
-          
-          export PORT="${{ secrets.PORT }}"
-          echo "PORT=$PORT"
-          
-          export REDIS_HOST="${{ secrets.REDIS_HOST }}"
-          echo "REDIS_HOST=$REDIS_HOST"
-          
-          export DJANGO_SUPERUSER_EMAIL="${{ secrets.DJANGO_SUPERUSER_EMAIL }}"
-          echo "DJANGO_SUPERUSER_EMAIL=$DJANGO_SUPERUSER_EMAIL"
-          
-          export DJANGO_SUPERUSER_FIRSTNAME="${{ secrets.DJANGO_SUPERUSER_FIRSTNAME }}"
-          echo "DJANGO_SUPERUSER_FIRSTNAME=$DJANGO_SUPERUSER_FIRSTNAME"
-          
-          export DJANGO_SUPERUSER_LASTNAME="${{ secrets.DJANGO_SUPERUSER_LASTNAME }}"
-          echo "DJANGO_SUPERUSER_LASTNAME=$DJANGO_SUPERUSER_LASTNAME"
-          
-          export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DJANGO_SUPERUSER_PASSWORD }}"
-          echo "DJANGO_SUPERUSER_PASSWORD=$DJANGO_SUPERUSER_PASSWORD"
-          
-          export DJANGO_SETTINGS_MODULE="${{ secrets.DJANGO_SETTINGS_MODULE }}"
-          echo "DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE"
-          
-          export ALLOWED_HOSTS="${{ secrets.ALLOWED_HOSTS }}"
-          echo "ALLOWED_HOSTS=$ALLOWED_HOSTS"
-          
-          export ALLOWED_ORIGINS="${{ secrets.ALLOWED_ORIGINS }}"
-          echo "ALLOWED_ORIGINS=$ALLOWED_ORIGINS"
-          
-          export LLM_SERVICE_URL="${{ secrets.LLM_SERVICE_URL }}"
-          echo "LLM_SERVICE_URL=$LLM_SERVICE_URL"
-          
-          export CSRF_TRUSTED_ORIGINS="${{ secrets.CSRF_TRUSTED_ORIGINS }}"
-          echo "CSRF_TRUSTED_ORIGINS=$CSRF_TRUSTED_ORIGINS"
-          
-          export ON_CLOUD="${{ secrets.ON_CLOUD }}"
-          echo "ON_CLOUD=$ON_CLOUD"
-          
-          export GS_BUCKET_STATIC_NAME="${{ secrets.GS_BUCKET_STATIC_NAME }}"
-          echo "GS_BUCKET_STATIC_NAME=$GS_BUCKET_STATIC_NAME"
-          
-          export GS_BUCKET_MEDIA_NAME="${{ secrets.GS_BUCKET_MEDIA_NAME }}"
-          echo "GS_BUCKET_MEDIA_NAME=$GS_BUCKET_MEDIA_NAME"
-          
-          export REDIS_HOST_LLM="${{ secrets.REDIS_HOST_LLM }}"
-          echo "REDIS_HOST_LLM=$REDIS_HOST_LLM"
-          
-          export BACKEND_URL="${{ secrets.BACKEND_URL }}"
-          echo "BACKEND_URL=$BACKEND_URL"
-          
-          export ASYNC_JOB_MAX_RETRIES="${{ secrets.ASYNC_JOB_MAX_RETRIES }}"
-          echo "ASYNC_JOB_MAX_RETRIES=$ASYNC_JOB_MAX_RETRIES"
-          
-          export ASYNC_JOB_RETRY_DELAY="${{ secrets.ASYNC_JOB_RETRY_DELAY }}"
-          echo "ASYNC_JOB_RETRY_DELAY=$ASYNC_JOB_RETRY_DELAY"
-          
-          export ASYNC_JOB_TIMEOUT="${{ secrets.ASYNC_JOB_TIMEOUT }}"
-          echo "ASYNC_JOB_TIMEOUT=$ASYNC_JOB_TIMEOUT"
-          
-          export MARK_LEFTOVER_RESULT_KEY="${{ secrets.MARK_LEFTOVER_RESULT_KEY }}"
-          echo "MARK_LEFTOVER_RESULT_KEY=$MARK_LEFTOVER_RESULT_KEY"
-          
-          export MARK_DANGLING_RESULT_KEY="${{ secrets.MARK_DANGLING_RESULT_KEY }}"
-          echo "MARK_DANGLING_RESULT_KEY=$MARK_DANGLING_RESULT_KEY"
-          
-          export STUDY_FRIEND_CUDA="${{ secrets.STUDY_FRIEND_CUDA }}"
-          echo "STUDY_FRIEND_CUDA=$STUDY_FRIEND_CUDA"
-          
-          export NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}"
-          echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
-
-        
+          # First, check that the secret is not empty
+          if [ -z "${{ secrets.TF_VARS_CONTENT }}" ]; then
+            echo "Error: TF_VARS_CONTENT secret is not set or is empty in the 'terraform' environment."
+            exit 1
+          fi
+          # Now, securely write the content to a file, preventing it from being logged
+          echo "${{ secrets.TF_VARS_CONTENT }}" | sudo tee terraform.tfvars > /dev/null
+          echo "terraform.tfvars file created successfully."
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
 
+      # Terraform now automatically finds and uses terraform.tfvars
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan -var-file=terraform.tfvars
+        run: terraform plan -out=tfplan
 
       - name: Await Manual Approval
         uses: trstringer/manual-approval@v1
@@ -178,15 +80,16 @@ jobs:
           approvers: ${{ env.APPROVERS }}
           minimum-approvals: 1
 
+      # Apply the exact plan that was approved
       - name: Apply Terraform Configuration
         id: apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve -var-file=terraform.tfvars
+        run: terraform apply -auto-approve tfplan
 
       - name: Clean up sensitive files
         if: always()
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          echo "Cleaning up terraform.tfvars and any leftovers..."
-          rm -f terraform.tfvars
+          echo "Cleaning up sensitive files..."
+          rm -f terraform.tfvars tfplan
           rm -rf .terraform
