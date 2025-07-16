@@ -52,7 +52,7 @@ jobs:
           service_account: ${{ env.GCP_SA_EMAIL }}
 
       - name: Echo GCP Region
-        run: echo "GCP Region is ${{ secrets.GCP_REGION }}"
+        run: echo "GCP Region is ${{ GCP_REGION }}"
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
