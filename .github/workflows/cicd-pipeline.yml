@@ -32,7 +32,7 @@ jobs:
     name: Terraform Plan
     needs: [security-and-lint]
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 1
     environment: terraform
     env:
       ACTIONS_RUNNER_DEBUG: true
@@ -55,7 +55,7 @@ jobs:
       TF_VAR_django_superuser_lastname: ${{ secrets.DJANGO_SUPERUSER_LASTNAME }}
       TF_VAR_django_superuser_password: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
       TF_VAR_django_settings_module: ${{ secrets.DJANGO_SETTINGS_MODULE }}
-      TF_VAR_allowed_hosts: ${{ secrets.ALLOWED_HOSTS }}
+      TF_VAR_ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
       TF_VAR_allowed_origins: ${{ secrets.ALLOWED_ORIGINS }}
       TF_VAR_llm_service_url: ${{ secrets.LLM_SERVICE_URL }}
       TF_VAR_csrf_trusted_origins: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
@@ -88,9 +88,6 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.GCP_SA_EMAIL }}
-
-      - name: Echo GCP Region
-        run: echo "GCP Region is ${{ secrets.GCP_REGION }}"
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -127,7 +124,7 @@ jobs:
       TF_VAR_django_superuser_lastname: ${{ secrets.DJANGO_SUPERUSER_LASTNAME }}
       TF_VAR_django_superuser_password: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
       TF_VAR_django_settings_module: ${{ secrets.DJANGO_SETTINGS_MODULE }}
-      TF_VAR_allowed_hosts: ${{ secrets.ALLOWED_HOSTS }}
+      TF_VAR_ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
       TF_VAR_allowed_origins: ${{ secrets.ALLOWED_ORIGINS }}
       TF_VAR_llm_service_url: ${{ secrets.LLM_SERVICE_URL }}
       TF_VAR_csrf_trusted_origins: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
