@@ -55,7 +55,7 @@ jobs:
       TF_VAR_django_superuser_lastname: ${{ secrets.DJANGO_SUPERUSER_LASTNAME }}
       TF_VAR_django_superuser_password: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
       TF_VAR_django_settings_module: ${{ secrets.DJANGO_SETTINGS_MODULE }}
-      TF_VAR_allowed_hosts: ${{ env.ALLOWED_HOSTS }}
+      # TF_VAR_allowed_hosts: ${{ secrets.ALLOWED_HOSTS }}
       TF_VAR_allowed_origins: ${{ secrets.ALLOWED_ORIGINS }}
       TF_VAR_llm_service_url: ${{ secrets.LLM_SERVICE_URL }}
       TF_VAR_csrf_trusted_origins: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
@@ -79,6 +79,8 @@ jobs:
     steps:
 
       - name: Debug ALLOWED_HOSTS
+        env:
+          TF_VAR_allowed_hosts: ${{ env.ALLOWED_HOSTS }}
         run: |
           echo "::debug::Raw ALLOWED_HOSTS: $TF_VAR_allowed_hosts"
 
