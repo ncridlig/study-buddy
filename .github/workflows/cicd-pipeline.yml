@@ -77,6 +77,11 @@ jobs:
       id-token: 'write'
 
     steps:
+
+      - name: Debug ALLOWED_HOSTS
+        run: |
+          echo "::debug::Raw ALLOWED_HOSTS: $TF_VAR_allowed_hosts"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
