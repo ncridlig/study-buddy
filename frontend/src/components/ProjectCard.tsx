@@ -41,7 +41,7 @@ export default function ProjectCard({ project, onDelete}: ProjectCardProps) {
         <Button
           size="small"
           color="error" // 'error' color makes it red, indicating a destructive action
-          onClick={() => onDelete(project.id)}
+          onClick={() => onDelete?.(project.id)}
         >
           Delete
         </Button>

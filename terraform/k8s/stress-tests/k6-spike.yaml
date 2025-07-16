@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6-spike-test # Changed name to align with stress test naming convention
+  namespace: stress-test # Ensure this matches your namespace
+spec:
+  template:
+    metadata:
+      labels:
+        app: k6-spike-test # Retaining label for identification
+    spec:
+      containers:
+      - name: k6
+        image: grafana/k6:latest # Use the latest k6 Docker image
+        command: ["k6", "run", "/scripts/k6-spike.js"] # Updated path to match /scripts mount
+        env:
+        - name: BASE_URL
+          value: "https://study-buddy.duckdns.org" # Set your base URL here
+        volumeMounts:
+        - name: k6-script-volume
+          mountPath: /scripts # Changed mountPath to /scripts
+      volumes:
+      - name: k6-script-volume
+        configMap:
+          name: k6-spike # Name of the configmap you created earlier (k6-spike)
+      restartPolicy: Never # The job should not restart if it completes successfully or fails
+  backoffLimit: 0 # Changed backoffLimit to 0 as per your stress test config
