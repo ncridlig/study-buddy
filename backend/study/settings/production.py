@@ -17,7 +17,7 @@ ALLOWED_HOSTS = ['*']
 # if POD_IP:
 #     ALLOWED_HOSTS.append(POD_IP)
 
-CORS_ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", default="").split()
+CORS_ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", default="").split(",")
 
 DATABASES = {
     'default': {
