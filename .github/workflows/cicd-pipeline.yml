@@ -112,9 +112,9 @@ jobs:
           secret: ${{ github.TOKEN }}
           approvers: ${{ env.APPROVERS }}
           minimum-approvals: 1
-          body: |
+          issue-body: |
             A Terraform plan has been generated. Please review the changes below and approve or deny.
-            
+
             **Workflow Run:** `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
 
             <details><summary>Click to view the Terraform Plan</summary>
@@ -124,6 +124,12 @@ jobs:
             ```
 
             </details>
+
+            [!IMPORTANT]
+            > Required approvers: 
+            > * @ncridlig
+            > * @aliloloee
+            > * @taaraa99
 
             > [!TIP]
             > Respond with "approve" or "yes" to continue, or "deny" or "no" to cancel.
