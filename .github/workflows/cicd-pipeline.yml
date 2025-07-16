@@ -28,49 +28,50 @@ jobs:
         run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-  terraform-apply:
-    name: Terraform Plan & Apply
+  terraform-plan:
+    name: Terraform Plan
     needs: [security-and-lint]
     runs-on: ubuntu-latest
-    timeout-minutes: 29
+    timeout-minutes: 2
     environment: terraform
     env:
       ACTIONS_RUNNER_DEBUG: true
-      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      GCP_REGION: ${{ secrets.GCP_REGION }}
-      MACHINE_TYPE: ${{ secrets.MACHINE_TYPE }}
-      ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
-      BUSINESS_DIVSION: ${{ secrets.BUSINESS_DIVSION }}
-      NAME: ${{ secrets.NAME }}
-      USER: ${{ secrets.USER }}
-      PASSWORD: ${{ secrets.PASSWORD }}
-      DB_VERSION: ${{ secrets.DB_VERSION }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      DEBUG: ${{ secrets.DEBUG }}
-      HOST: ${{ secrets.HOST }}
-      PORT: ${{ secrets.PORT }}
-      REDIS_HOST: ${{ secrets.REDIS_HOST }}
-      DJANGO_SUPERUSER_EMAIL: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
-      DJANGO_SUPERUSER_FIRSTNAME: ${{ secrets.DJANGO_SUPERUSER_FIRSTNAME }}
-      DJANGO_SUPERUSER_LASTNAME: ${{ secrets.DJANGO_SUPERUSER_LASTNAME }}
-      DJANGO_SUPERUSER_PASSWORD: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
-      DJANGO_SETTINGS_MODULE: ${{ secrets.DJANGO_SETTINGS_MODULE }}
-      ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
-      ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-      LLM_SERVICE_URL: ${{ secrets.LLM_SERVICE_URL }}
-      CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
-      ON_CLOUD: ${{ secrets.ON_CLOUD }}
-      GS_BUCKET_STATIC_NAME: ${{ secrets.GS_BUCKET_STATIC_NAME }}
-      GS_BUCKET_MEDIA_NAME: ${{ secrets.GS_BUCKET_MEDIA_NAME }}
-      REDIS_HOST_LLM: ${{ secrets.REDIS_HOST_LLM }}
-      BACKEND_URL: ${{ secrets.BACKEND_URL }}
-      ASYNC_JOB_MAX_RETRIES: ${{ secrets.ASYNC_JOB_MAX_RETRIES }}
-      ASYNC_JOB_RETRY_DELAY: ${{ secrets.ASYNC_JOB_RETRY_DELAY }}
-      ASYNC_JOB_TIMEOUT: ${{ secrets.ASYNC_JOB_TIMEOUT }}
-      MARK_LEFTOVER_RESULT_KEY: ${{ secrets.MARK_LEFTOVER_RESULT_KEY }}
-      MARK_DANGLING_RESULT_KEY: ${{ secrets.MARK_DANGLING_RESULT_KEY }}
-      STUDY_FRIEND_CUDA: ${{ secrets.STUDY_FRIEND_CUDA }}
-      NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+      TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_gcp_region: ${{ secrets.GCP_REGION }}
+      TF_VAR_machine_type: ${{ secrets.MACHINE_TYPE }}
+      TF_VAR_environment: ${{ secrets.ENVIRONMENT }}
+      TF_VAR_business_divsion: ${{ secrets.BUSINESS_DIVSION }}
+      TF_VAR_name: ${{ secrets.NAME }}
+      TF_VAR_user: ${{ secrets.USER }}
+      TF_VAR_password: ${{ secrets.PASSWORD }}
+      TF_VAR_db_version: ${{ secrets.DB_VERSION }}
+      TF_VAR_secret_key: ${{ secrets.SECRET_KEY }}
+      TF_VAR_debug: ${{ secrets.DEBUG }}
+      TF_VAR_host: ${{ secrets.HOST }}
+      TF_VAR_port: ${{ secrets.PORT }}
+      TF_VAR_redis_host: ${{ secrets.REDIS_HOST }}
+      TF_VAR_django_superuser_email: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+      TF_VAR_django_superuser_firstname: ${{ secrets.DJANGO_SUPERUSER_FIRSTNAME }}
+      TF_VAR_django_superuser_lastname: ${{ secrets.DJANGO_SUPERUSER_LASTNAME }}
+      TF_VAR_django_superuser_password: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+      TF_VAR_django_settings_module: ${{ secrets.DJANGO_SETTINGS_MODULE }}
+      TF_VAR_allowed_hosts: ${{ secrets.ALLOWED_HOSTS }}
+      TF_VAR_allowed_origins: ${{ secrets.ALLOWED_ORIGINS }}
+      TF_VAR_llm_service_url: ${{ secrets.LLM_SERVICE_URL }}
+      TF_VAR_csrf_trusted_origins: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
+      TF_VAR_on_cloud: ${{ secrets.ON_CLOUD }}
+      TF_VAR_gs_bucket_static_name: ${{ secrets.GS_BUCKET_STATIC_NAME }}
+      TF_VAR_gs_bucket_media_name: ${{ secrets.GS_BUCKET_MEDIA_NAME }}
+      TF_VAR_redis_host_llm: ${{ secrets.REDIS_HOST_LLM }}
+      TF_VAR_backend_url: ${{ secrets.BACKEND_URL }}
+      TF_VAR_async_job_max_retries: ${{ secrets.ASYNC_JOB_MAX_RETRIES }}
+      TF_VAR_async_job_retry_delay: ${{ secrets.ASYNC_JOB_RETRY_DELAY }}
+      TF_VAR_async_job_timeout: ${{ secrets.ASYNC_JOB_TIMEOUT }}
+      TF_VAR_mark_leftover_result_key: ${{ secrets.MARK_LEFTOVER_RESULT_KEY }}
+      TF_VAR_mark_dangling_result_key: ${{ secrets.MARK_DANGLING_RESULT_KEY }}
+      TF_VAR_study_friend_cuda: ${{ secrets.STUDY_FRIEND_CUDA }}
+      TF_VAR_next_public_api_url: ${{ secrets.NEXT_PUBLIC_API_URL }}
+      
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -98,6 +99,56 @@ jobs:
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform plan
+
+  terraform-apply:
+    name: Terraform Apply
+    needs: [terraform-plan]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: terraform
+    env:
+      ACTIONS_RUNNER_DEBUG: true
+      TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_gcp_region: ${{ secrets.GCP_REGION }}
+      TF_VAR_machine_type: ${{ secrets.MACHINE_TYPE }}
+      TF_VAR_environment: ${{ secrets.ENVIRONMENT }}
+      TF_VAR_business_divsion: ${{ secrets.BUSINESS_DIVSION }}
+      TF_VAR_name: ${{ secrets.NAME }}
+      TF_VAR_user: ${{ secrets.USER }}
+      TF_VAR_password: ${{ secrets.PASSWORD }}
+      TF_VAR_db_version: ${{ secrets.DB_VERSION }}
+      TF_VAR_secret_key: ${{ secrets.SECRET_KEY }}
+      TF_VAR_debug: ${{ secrets.DEBUG }}
+      TF_VAR_host: ${{ secrets.HOST }}
+      TF_VAR_port: ${{ secrets.PORT }}
+      TF_VAR_redis_host: ${{ secrets.REDIS_HOST }}
+      TF_VAR_django_superuser_email: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+      TF_VAR_django_superuser_firstname: ${{ secrets.DJANGO_SUPERUSER_FIRSTNAME }}
+      TF_VAR_django_superuser_lastname: ${{ secrets.DJANGO_SUPERUSER_LASTNAME }}
+      TF_VAR_django_superuser_password: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+      TF_VAR_django_settings_module: ${{ secrets.DJANGO_SETTINGS_MODULE }}
+      TF_VAR_allowed_hosts: ${{ secrets.ALLOWED_HOSTS }}
+      TF_VAR_allowed_origins: ${{ secrets.ALLOWED_ORIGINS }}
+      TF_VAR_llm_service_url: ${{ secrets.LLM_SERVICE_URL }}
+      TF_VAR_csrf_trusted_origins: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
+      TF_VAR_on_cloud: ${{ secrets.ON_CLOUD }}
+      TF_VAR_gs_bucket_static_name: ${{ secrets.GS_BUCKET_STATIC_NAME }}
+      TF_VAR_gs_bucket_media_name: ${{ secrets.GS_BUCKET_MEDIA_NAME }}
+      TF_VAR_redis_host_llm: ${{ secrets.REDIS_HOST_LLM }}
+      TF_VAR_backend_url: ${{ secrets.BACKEND_URL }}
+      TF_VAR_async_job_max_retries: ${{ secrets.ASYNC_JOB_MAX_RETRIES }}
+      TF_VAR_async_job_retry_delay: ${{ secrets.ASYNC_JOB_RETRY_DELAY }}
+      TF_VAR_async_job_timeout: ${{ secrets.ASYNC_JOB_TIMEOUT }}
+      TF_VAR_mark_leftover_result_key: ${{ secrets.MARK_LEFTOVER_RESULT_KEY }}
+      TF_VAR_mark_dangling_result_key: ${{ secrets.MARK_DANGLING_RESULT_KEY }}
+      TF_VAR_study_friend_cuda: ${{ secrets.STUDY_FRIEND_CUDA }}
+      TF_VAR_next_public_api_url: ${{ secrets.NEXT_PUBLIC_API_URL }}
+      
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
 
       - name: Await Manual Approval
         uses: trstringer/manual-approval@v1
