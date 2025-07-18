@@ -1,0 +1,39 @@
+gcp_project_id             = ""
+gcp_region                 = "europe-west1"
+machine_type               = "e2-medium"
+environment                = "dev"
+business_divsion           = "hr"
+NAME                       = "cycle"
+USER                       = "postgres"
+PASSWORD                   = ""
+DB_VERSION                 = "POSTGRES_15"
+SECRET_KEY                 = "" # Refer to backend README.md file for recreation
+DEBUG                      = "True"
+HOST                       = "" # primary IP of SQL DB, find it on Google Cloud
+PORT                       = "5432"
+REDIS_HOST                 = "rd"
+DJANGO_SUPERUSER_EMAIL     = "" # example@example.com
+DJANGO_SUPERUSER_FIRSTNAME = "" # Joe
+DJANGO_SUPERUSER_LASTNAME  = "" # Mama
+DJANGO_SUPERUSER_PASSWORD  = "123"
+DJANGO_SETTINGS_MODULE     = "study.settings.production"
+ALLOWED_HOSTS              = "web,web:8000,localhost,127.0.0.1,[::1],35.195.39.220,backend" # Add your custom domain here
+ALLOWED_ORIGINS            = "http://localhost:3000,http://127.0.0.1:3000"
+LLM_SERVICE_URL            = "http://llm-api:8000/receive-task/"
+CSRF_TRUSTED_ORIGINS       = "" # We have CORS set to all using *
+ON_CLOUD                   = "True"
+GS_BUCKET_STATIC_NAME      = "static-volume"
+GS_BUCKET_MEDIA_NAME       = "media-volume"
+
+######## llm-secret.tf
+REDIS_HOST_LLM           = "llm-rd"
+BACKEND_URL              = "http://backend-internal/api/result/llm_callback/"
+ASYNC_JOB_MAX_RETRIES    = "4"
+ASYNC_JOB_RETRY_DELAY    = "10"
+ASYNC_JOB_TIMEOUT        = "86400" # 1 day maximum compute time
+MARK_LEFTOVER_RESULT_KEY = "leftover"
+MARK_DANGLING_RESULT_KEY = "dangling"
+STUDY_FRIEND_CUDA        = "true"
+
+###### frontend variables
+NEXT_PUBLIC_API_URL = "https://study-buddy.duckdns.org" # Hardcoded inside /frontend/.env

@@ -1,0 +1,4 @@
+This module of the project takes care of creating the infrastructures and deployment of the 3 microservices.
+
+- Creating the infrastructures: Moving to the directory */infra*, you can find the terraform codes related to automatic creation of infrastructures. This directory is responsible for creation of items that are not frequently modified including the cluster, the node pools, the buckets, etc.
+- Deploying the microservices: Moving to the directory */k8s*, you can find the terraform codes related to automatic deployment of the microservice, along with settings needed to provide needed permissions for accessing the data of SQL db and the media files in buckets. 

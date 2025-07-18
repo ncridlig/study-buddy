@@ -11,7 +11,7 @@ steps:
       - "-c"
       - |
         echo "SKIP_BACKEND=true"   >> /workspace/flags.env
-        echo "SKIP_FRONTEND=false" >> /workspace/flags.env
+        echo "SKIP_FRONTEND=true" >> /workspace/flags.env
         echo "SKIP_LLM=true"       >> /workspace/flags.env
 
   # 1. Fetch backend secrets from Secret Manager and write to backend/.env

@@ -96,9 +96,7 @@ with Diagram("gke_and_storage_architecture_on_gcp", show=False, graph_attr=graph
                             redis_deploy - redis_pod
                             redis_vpa >> Edge(color="purple") >> redis_deploy
                             redis_pod - redis_svc
-                        
-                    # --- GPU Node Pool ---
-                    with Cluster("GPU Node Pool ('gpu_pool')"):
+
                         # --- LLM API ---
                         with Cluster("LLM FastAPI"):
                             llm_api_deploy = Deployment("llm-api")
@@ -109,14 +107,6 @@ with Diagram("gke_and_storage_architecture_on_gcp", show=False, graph_attr=graph
                             llm_api_svc = Service("llm-api\n(ClusterIP)")
                             llm_api_pods - llm_api_svc
 
-                        # --- LLM Celery Workers ---
-                        with Cluster("LLM Workers"):
-                            llm_worker_deploy = Deployment("llm-worker")
-                            llm_worker_pods = [Celery("llm-worker-pod-1"), Celery("...")]
-                            llm_worker_hpa = Docker("llm-worker-image")
-                            llm_worker_deploy >> llm_worker_pods
-                            llm_worker_hpa >> Edge(color="darkblue") >> llm_worker_deploy
-
                         # --- LLM Redis ---
                         with Cluster("LLM Cache"):
                             redis_deploy = Deployment("llm-redis")
@@ -126,6 +116,18 @@ with Diagram("gke_and_storage_architecture_on_gcp", show=False, graph_attr=graph
                             redis_deploy >> redis_pod
                             redis_vpa >> Edge(color="purple") >> redis_deploy
                             redis_pod - llm_redis_svc
+                        
+                    # --- GPU Node Pool ---
+                    with Cluster("GPU Node Pool ('gpu_pool')"):
+                        
+                        # --- LLM Celery Workers ---
+                        with Cluster("LLM Workers"):
+                            llm_worker_deploy = Deployment("llm-worker")
+                            llm_worker_pods = [Celery("llm-worker-pod-1"), Celery("...")]
+                            llm_worker_hpa = Docker("llm-worker-image")
+                            llm_worker_deploy >> llm_worker_pods
+                            llm_worker_hpa >> Edge(color="darkblue") >> llm_worker_deploy
+            
                         
     # --- Define Relationships ---
     
@@ -160,9 +162,5 @@ with Diagram("gke_and_storage_architecture_on_gcp", show=False, graph_attr=graph
     gcp_storage_admin >> static_bucket
     gcp_storage_admin >> pg_sql
     gcp_storage_read  >> media_bucket
-    # gcp_sa << Edge(label="impersonates (Workload Identity)", color="darkgreen") << k8s_sa
-    # k8s_sa >> Edge(label="is used by", style="dotted", color="darkgreen") >> backend_pods
-    # k8s_sa >> Edge(label="is used by", style="dotted", color="darkgreen") >> celery_pods
-    # k8s_sa >> Edge(label="is used by", style="dotted", color="darkgreen") >> nginx_pods
 
 # Diagram is generated

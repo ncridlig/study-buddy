@@ -1,11 +1,20 @@
 
----
+# LLM Service 🧠
 
-This is the LLM-service for the study-buddy project.
+This is a wrapper of the [Study Friend](https://github.com/ncridlig/study-friend) repository which runs PDF ingestion and markdown generation on a local computer. There are two Dockerfiles, `Dockerfile` is the FastAPI endpoint which the backend calls and `Dockerfile.cuda` is the GPU accelerated container that loads the HuggingFace model and performs inference.
 
-The main part is a celery worker which has study_friend, the inference Visual Language Model engine, built as a local package. Then there is an API which connects this service to the backend. Finally, there is redis store for persistence across different queries. It uses topics, image conversion storage, and finally the markdown output which is what is rendered by the frontend.
+You can manually send commands using PostMan. The callback is `http://localhost:8001/receive-task/` with a body that is at a minimum 
+```
+{
+  "task_id": 1,
+  "files": ["data/14-humans.pdf", "data/10-InformationArchitecture.pdf"]
+}
+```
+these files already exist for your convenience in testing. You can see additional arguments in `app/tasks.py` which are image_size, verbose, question_prompt, and answer_prompt. The main thing to implement is the backend and frontend API to expose these to the end user. The other thing to implement would be not hardcoding the model to the same Qwen4B parameter one, so we can switch to smarter ones.
 
----
+## Implementation details 👀
+
+The main part is a celery worker which has study_friend, the inference Visual Language Model engine, built as a local package. Then there is an API which connects this service to the backend. Finally, there is redis store for persistence across different queries. It uses topics, image conversion storage, and finally the markdown output which is what is rendered by the frontend. Markdown is sent and saved locally for debugging.
 
 ## ⚙️ Setup Instructions
 

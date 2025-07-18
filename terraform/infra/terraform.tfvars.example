@@ -1,0 +1,6 @@
+gcp_project_id   = ""
+gcp_region       = "europe-west1"
+machine_type     = "e2-medium"
+gpu_machine_type = "n1-standard-4"
+environment      = "dev"
+business_divsion = "hr"

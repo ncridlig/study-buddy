@@ -6,7 +6,7 @@ resource "google_container_node_pool" "nodepool_1" {
     initial_node_count = 1 # Needs autoscalling and should not be use with "node_count"
     autoscaling {
         min_node_count = 1
-        max_node_count = 3
+        max_node_count = 10
         location_policy = "ANY"  
     }
 
@@ -29,7 +29,7 @@ resource "google_container_node_pool" "gpu_pool" {
   node_config {
     machine_type = var.gpu_machine_type # "n1-standard-4"
     guest_accelerator {
-      type  = "nvidia-tesla-t4" # cheapest GPU
+      type  = "nvidia-tesla-t4" # cheapest GPU is nvidia-tesla-t4, nvidia-a100 does not exist in our region
       count = 1
     }
     labels = {
