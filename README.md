@@ -150,3 +150,23 @@ There are two components in the CI/CD setup for automated deployment:
    - Lints the `/terraform/k8s` configuration
    - Creates a **GitHub Issue** with proposed changes for review
    - This is **optional** and not required to run the app—Terraform can be executed manually
+
+---
+
+# 🖼️ Screenshots
+
+### 📘 UI - Dashboard
+
+![Dashboard](assets/UI-dashboard.png)
+
+### 📘 Uploaded PDFs and Generated Q&As
+
+![QAs](assets/UI-qa2.png)
+
+### 📘 Swagger APIs
+
+![Swagger](assets/Swagger.png)
+
+### 📘 Admin Panel
+
+![Admin](assets/BACK-Admin.png)
