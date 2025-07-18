@@ -1,10 +1,11 @@
 # 📚 Study-Buddy Backend
 
-![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white) ![Django REST framework](https://img.shields.io/badge/DRF-FF1700?style=for-the-badge&logo=django&logoColor=white) ![Django Channels](https://img.shields.io/badge/Django%20Channels-44B78B?style=for-the-badge) ![Celery](https://img.shields.io/badge/Celery-37814A?style=for-the-badge&logo=celery&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker--Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
 
-This is the backend service for the study-buddy project, built with Django and Dockerized for easy deployment. It handles user authentication, topic and file management, and provides API documentation via Swagger.
+This is the backend microservice for the study-buddy project, built with Django and Dockerized for easy deployment. It handles user authentication, topic and file management, and provides API documentation via Swagger.
 
 ---
 
@@ -68,6 +69,16 @@ Make a copy of `.env.production.example` and rename it as `.env`. Then edit `.en
 
 - `CSRF_TRUSTED_ORIGINS`  
   This variable is used to define a list (similar to `ALLOWED_ORIGINS` and `ALLOWED_HOSTS`) of trusted origins for Cross-Site Request Forgery (CSRF) protection. In production phase, the ip and/or the domain addresses can be added to this list
+
+- `ON_CLOUD`  
+  Set this to `True` to enable cloud-specific behavior in Django (e.g., using remote storage for static and media files).
+
+- Google Cloud Buckets Configuration
+  These variables are used to configure access to Google Cloud Storage:
+  - `GS_BUCKET_STATIC_NAME` – Name of the bucket for static files
+  - `GS_BUCKET_MEDIA_NAME` – Name of the bucket for media files
+  - `GS_PROJECT_ID` – Your GCP project ID
+    > **Note**: These variables are only used if `ON_CLOUD` is set to True.
 
 ## 2. 📦 Create Docker volumes and network
 
