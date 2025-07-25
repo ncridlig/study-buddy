@@ -1,0 +1,6 @@
+## Start the mock server
+uvicorn mock_server:app --port 8001 --reload
+
+
+## Send back request to backend with bash
+curl -X POST http://localhost:8001/send-result/ -H "Content-Type: application/json" -d '{"task_id": 123}'

@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  mock-fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mock-fastapi
+    ports:
+      - "8001:8001"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    external: true
